@@ -345,11 +345,13 @@
             flex-direction: column;
             justify-content: space-between;
             gap: 1.5rem;
-            transition: all 0.35s ease;
+            transition: transform 0.35s ease, box-shadow 0.35s ease, background 0.35s ease;
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
             position: relative;
             overflow: hidden;
             backdrop-filter: blur(8px);
+            cursor: pointer;
+            will-change: transform, box-shadow, background;
         }
 
         .project-card.red {
@@ -373,8 +375,9 @@
         }
 
         .project-card:hover {
-            transform: translateY(-6px);
-            background: rgba(39, 58, 92, 0.8);
+            transform: translate3d(-6px, -10px, 0) rotate(1deg);
+            background: rgba(39, 58, 92, 0.85);
+            box-shadow: 0 16px 40px rgba(56, 189, 248, 0.18);
         }
 
         .card-info {
@@ -511,7 +514,7 @@
                 
                 <div class="project-grid">
                     <!-- Ball Fight 게임 -->
-                    <div class="project-card red">
+                    <div class="project-card red" data-href="ballufc.html" tabindex="0">
                         <div class="card-info">
                             <h3 class="card-title">Ball Fight 게임 ⚽</h3>
                             <p class="card-desc">바이브 코딩을 활용해 직접 만든 웹 게임입니다.</p>
@@ -520,7 +523,7 @@
                     </div>
 
                     <!-- 오목 페이지 -->
-                    <div class="project-card yellow">
+                    <div class="project-card yellow" data-href="omok.html" tabindex="0">
                         <div class="card-info">
                             <h3 class="card-title">오목 게임 🧠</h3>
                             <p class="card-desc">웹에서 직접 플레이할 수 있는 오목 게임 페이지로 이동합니다.</p>
@@ -529,7 +532,7 @@
                     </div>
 
                     <!-- 소개 페이지 -->
-                    <div class="project-card green">
+                    <div class="project-card green" data-href="introduce.html" tabindex="0">
                         <div class="card-info">
                             <h3 class="card-title">웹 개발 기초 안내 💡</h3>
                             <p class="card-desc">웹 개발의 기초 개념과 문법을 배우고 실습할 수 있는 페이지입니다.</p>
@@ -538,7 +541,7 @@
                     </div>
 
                     <!-- 스터디 페이지 -->
-                    <div class="project-card blue">
+                    <div class="project-card blue" data-href="study.html" tabindex="0">
                         <div class="card-info">
                             <h3 class="card-title">학습 도우미 웹 📚</h3>
                             <p class="card-desc">타이머, 오답노트 등 학업능력 증진에 도움되는 나만의 스터디 페이지로 이동합니다.</p>
@@ -621,6 +624,21 @@
         });
 
         titleContainer.addEventListener('mouseleave', resetTitleSpans);
+
+        const projectCards = document.querySelectorAll('.project-card[data-href]');
+        projectCards.forEach((card) => {
+            card.addEventListener('click', (event) => {
+                if (!event.target.closest('a')) {
+                    window.location.href = card.dataset.href;
+                }
+            });
+
+            card.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    window.location.href = card.dataset.href;
+                }
+            });
+        });
     </script>
 </body>
 </html>
