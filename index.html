@@ -122,9 +122,10 @@
 
         .interactive-title span {
             display: inline-block;
+            padding: 0.2rem 0.25rem;
             color: #ffffff;
             text-shadow: 0 2px 12px rgba(56, 189, 248, 0.3);
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             will-change: transform, color, text-shadow;
         }
 
@@ -132,11 +133,27 @@
             width: 0.5em;
         }
 
-        .interactive-title span:hover {
+        .interactive-title span.hovered {
             color: #38bdf8;
-            transform: translateY(-12px) scale(1.15) rotate(6deg);
             text-shadow: 0 0 25px rgba(56, 189, 248, 0.8);
             z-index: 5;
+        }
+
+        .title-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.2rem;
+        }
+
+        .title-subtext {
+            margin: 0;
+            font-family: 'Pretendard', 'Arial Rounded MT Bold', 'Helvetica Rounded', sans-serif;
+            font-size: 0.85rem;
+            color: rgba(241, 245, 249, 0.55);
+            text-align: center;
+            letter-spacing: 0.05em;
+            font-weight: 500;
         }
 
         /* About Me 영역 */
@@ -461,9 +478,12 @@
     <header class="hero-section" id="vanta-hero-bg">
         <div class="hero-content">
             <!-- 제목 글귀: My Portfolio (한 줄 배치) -->
-            <h1 class="interactive-title" id="interactiveTitle">
-                <span>M</span><span>y</span><span class="space"></span><span>P</span><span>o</span><span>r</span><span>t</span><span>f</span><span>o</span><span>l</span><span>i</span><span>o</span>
-            </h1>
+            <div class="title-block">
+                <h1 class="interactive-title" id="interactiveTitle">
+                    <span>M</span><span>y</span><span class="space"></span><span>P</span><span>o</span><span>r</span><span>t</span><span>f</span><span>o</span><span>l</span><span>i</span><span>o</span>
+                </h1>
+                <p class="title-subtext">My Portfolio 위에 마우스를 올려보세요!</p>
+            </div>
 
             <!-- About Me 영역 -->
             <div class="about-container">
@@ -564,19 +584,43 @@
             });
         });
 
-        // 마우스 호버 시 역동적인 연출 (네온 글로우 및 탄성 효과)
-        const titleSpans = document.querySelectorAll('#interactiveTitle span:not(.space)');
+        // 마우스 이동 시 제목 전체에서 다중 글자 애니메이션 처리
+        const titleContainer = document.querySelector('#interactiveTitle');
+        const titleSpans = Array.from(document.querySelectorAll('#interactiveTitle span:not(.space)'));
 
-        titleSpans.forEach((span) => {
-            span.addEventListener('mouseenter', () => {
-                const randomAngle = (Math.random() - 0.5) * 25;
-                span.style.transform = `translateY(-12px) scale(1.15) rotate(${randomAngle}deg)`;
-            });
-
-            span.addEventListener('mouseleave', () => {
+        const resetTitleSpans = () => {
+            titleSpans.forEach((span) => {
+                span.classList.remove('hovered');
                 span.style.transform = 'translateY(0) scale(1) rotate(0deg)';
             });
+        };
+
+        titleContainer.addEventListener('mousemove', (event) => {
+            const rect = titleContainer.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+
+            titleSpans.forEach((span) => {
+                const spanRect = span.getBoundingClientRect();
+                const spanCenterX = spanRect.left - rect.left + spanRect.width / 2;
+                const distance = Math.abs(mouseX - spanCenterX);
+                const threshold = 120; // 마우스 범위 확대
+
+                if (distance < threshold) {
+                    const ratio = 1 - distance / threshold;
+                    const angle = (Math.random() - 0.5) * 25 * ratio;
+                    const lift = -12 * ratio;
+                    const scale = 1 + 0.15 * ratio;
+
+                    span.classList.add('hovered');
+                    span.style.transform = `translateY(${lift}px) scale(${scale}) rotate(${angle}deg)`;
+                } else {
+                    span.classList.remove('hovered');
+                    span.style.transform = 'translateY(0) scale(1) rotate(0deg)';
+                }
+            });
         });
+
+        titleContainer.addEventListener('mouseleave', resetTitleSpans);
     </script>
 </body>
 </html>
