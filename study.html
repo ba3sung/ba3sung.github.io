@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="ko" data-theme="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>고2 스마트 학습 매니저 | Study Manager 2.0</title>
+    <meta name="description" content="고등학교 2학년 전용 학습 효율 향상 웹 애플리케이션 - 투두리스트, 영단어장, 과목별 오답노트 & 타이머, 무작위 퀴즈 시스템">
+    
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=Outfit:wght@400;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+    
+    <!-- FontAwesome Icons CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Ambient Lighting Backdrop Glows -->
+    <div class="ambient-glow glow-1"></div>
+    <div class="ambient-glow glow-2"></div>
+    <div class="ambient-glow glow-3"></div>
+
+    <!-- App Container -->
+    <div id="app">
+        <!-- Top Header Navigation -->
+        <header class="app-header">
+            <div class="header-container">
+                <div class="brand">
+                    <div class="brand-icon">
+                        <i class="fa-solid fa-graduation-cap"></i>
+                    </div>
+                    <div class="brand-text">
+                        <span class="brand-title">StudyHub <small>Grade 11</small></span>
+                        <span class="brand-subtitle">고2 학습 효율 관리 매니저</span>
+                    </div>
+                </div>
+
+                <!-- Navigation Tabs -->
+                <nav class="nav-tabs">
+                    <button class="nav-tab active" data-tab="dashboard">
+                        <i class="fa-solid fa-chart-pie"></i>
+                        <span>대시보드</span>
+                    </button>
+                    <button class="nav-tab" data-tab="todo">
+                        <i class="fa-solid fa-list-check"></i>
+                        <span>To-Do 일정</span>
+                        <span class="badge" id="nav-todo-badge">0</span>
+                    </button>
+                    <button class="nav-tab" data-tab="subjects">
+                        <i class="fa-solid fa-book-open-reader"></i>
+                        <span>과목별 학습관</span>
+                        <span class="badge badge-sub" id="nav-subject-badge">오답/시간</span>
+                    </button>
+                    <button class="nav-tab" data-tab="voca">
+                        <i class="fa-solid fa-book-bookmark"></i>
+                        <span>Voca & 퀴즈</span>
+                        <span class="badge badge-accent" id="nav-voca-badge">0</span>
+                    </button>
+                </nav>
+
+                <!-- Right Header Actions (Theme Toggle & D-Day Widget) -->
+                <div class="header-right-group">
+                    <!-- Theme Toggle Button -->
+                    <button id="theme-toggle-btn" class="theme-toggle-btn" title="다크/라이트 모드 전환">
+                        <i class="fa-solid fa-moon"></i>
+                    </button>
+
+                    <!-- Interactive D-Day Counter Widget -->
+                    <div class="d-day-card clickable" id="btn-open-dday-modal" title="D-Day 설정 변경">
+                        <span class="d-day-tag" id="header-dday-tag"><i class="fa-solid fa-fire"></i> 2027 수능</span>
+                        <span class="d-day-count" id="header-dday-count">D-470</span>
+                        <i class="fa-solid fa-pen-to-square dday-edit-icon"></i>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Content Section -->
+        <main class="app-main">
+            <!-- 1. DASHBOARD VIEW -->
+            <section id="dashboard-view" class="tab-view active">
+                <div class="welcome-banner ambient-card">
+                    <div class="welcome-content">
+                        <h2>안녕하세요! 오늘도 꿈을 향해 달리는 고2 💪</h2>
+                        <p id="quote-display">"성공은 매일 반복한 작은 노력들의 합이다." - 로버트 콜리어</p>
+                    </div>
+                    <div class="welcome-badge">
+                        <i class="fa-solid fa-trophy"></i>
+                        <span>목표 달성 몰입 모드</span>
+                    </div>
+                </div>
+
+                <!-- Quick Stats Grid -->
+                <div class="stats-grid">
+                    <div class="stat-card ambient-card">
+                        <div class="stat-icon"><i class="fa-solid fa-circle-check"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">오늘의 할 일 달성률</span>
+                            <div class="stat-value-group">
+                                <span class="stat-number" id="dash-todo-rate">0%</span>
+                                <span class="stat-sub" id="dash-todo-count">(0/0 완료)</span>
+                            </div>
+                            <div class="progress-bar-bg">
+                                <div class="progress-bar-fill" id="dash-todo-bar" style="width: 0%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="stat-card ambient-card">
+                        <div class="stat-icon icon-blue"><i class="fa-solid fa-clock"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">오늘 총 학습 시간</span>
+                            <span class="stat-number" id="dash-total-time">0<small>시간</small> 0<small>분</small></span>
+                            <span class="stat-sub" id="dash-subject-time-sub">과목별 타이머 통합</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card ambient-card">
+                        <div class="stat-icon icon-purple"><i class="fa-solid fa-book"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">등록된 영단어 / 오답노트</span>
+                            <span class="stat-number" id="dash-voca-notes-count">0 / 0</span>
+                            <span class="stat-sub" id="dash-mastered-count">암기 완료: 0개</span>
+                        </div>
+                    </div>
+
+                    <div class="stat-card ambient-card">
+                        <div class="stat-icon icon-orange"><i class="fa-solid fa-bolt"></i></div>
+                        <div class="stat-info">
+                            <span class="stat-label">최고 퀴즈 연승 (Streak)</span>
+                            <span class="stat-number" id="dash-quiz-streak">0 🔥</span>
+                            <span class="stat-sub" id="dash-quiz-total">총 퀴즈 시도: 0회</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Dashboard Two-Column Layout -->
+                <div class="dashboard-grid">
+                    <!-- Left: Today's Tasks Summary -->
+                    <div class="dash-box ambient-card">
+                        <div class="box-header">
+                            <h3><i class="fa-solid fa-calendar-day text-blue"></i> 오늘의 주요 일정</h3>
+                            <button class="btn btn-sm btn-outline" id="btn-goto-todo">
+                                전체 일정 보기 <i class="fa-solid fa-arrow-right"></i>
+                            </button>
+                        </div>
+                        <div id="dash-todo-list" class="mini-todo-list">
+                            <!-- Injected by JS -->
+                        </div>
+                    </div>
+
+                    <!-- Right: Quick Quiz Challenge & Subject Overview -->
+                    <div class="dash-box ambient-card">
+                        <div class="box-header">
+                            <h3><i class="fa-solid fa-spell-check text-blue"></i> 1분 학습 & 퀴즈</h3>
+                            <button class="btn btn-sm btn-primary" id="btn-dash-start-quiz">
+                                <i class="fa-solid fa-play"></i> 퀴즈 시작
+                            </button>
+                        </div>
+                        <div class="dash-quiz-banner">
+                            <div class="quiz-hero-icon">
+                                <i class="fa-solid fa-brain"></i>
+                            </div>
+                            <div class="quiz-hero-text">
+                                <h4>등록된 단어로 바로 실력 점검!</h4>
+                                <p>하루 5분 무작위 테스트로 고등 수능 필수 단어를 완벽 암기하세요.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 2. TO-DO LIST VIEW -->
+            <section id="todo-view" class="tab-view">
+                <div class="section-title-bar">
+                    <div>
+                        <h2><i class="fa-solid fa-list-check"></i> 학습 일정 관리 (To-Do)</h2>
+                        <p>체계적인 시간 관리로 시험과 수능을 대비하세요.</p>
+                    </div>
+                    <div class="todo-filter-summary">
+                        <span class="summary-pill active" data-filter="all" id="filter-all-cnt">전체 0</span>
+                        <span class="summary-pill" data-filter="pending" id="filter-pending-cnt">진행중 0</span>
+                        <span class="summary-pill" data-filter="completed" id="filter-completed-cnt">완료 0</span>
+                    </div>
+                </div>
+
+                <!-- Add Task Form Card -->
+                <div class="card add-todo-card ambient-card">
+                    <form id="todo-form" class="todo-form">
+                        <div class="form-group flex-1">
+                            <input type="text" id="todo-input" class="form-input" placeholder="오늘 할 공부를 입력하세요 (예: 수학1 삼각함수 30제 풀기)..." required>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group select-wrapper">
+                                <select id="todo-category" class="form-select">
+                                    <option value="국어">📕 국어</option>
+                                    <option value="수학" selected>📐 수학</option>
+                                    <option value="영어">🔤 영어</option>
+                                    <option value="탐구">🔬 탐구</option>
+                                    <option value="기타">✏️ 기타</option>
+                                </select>
+                            </div>
+
+                            <div class="form-group select-wrapper">
+                                <select id="todo-priority" class="form-select">
+                                    <option value="상">🔥 중요도 [상]</option>
+                                    <option value="중" selected>⚡ 중요도 [중]</option>
+                                    <option value="하">🌱 중요도 [하]</option>
+                                </select>
+                            </div>
+
+                            <button type="submit" class="btn btn-primary btn-add-todo">
+                                <i class="fa-solid fa-plus"></i> 추가하기
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Category Filter Tabs -->
+                <div class="category-tabs" id="todo-category-filters">
+                    <button class="cat-tab active" data-cat="all">전체 과목</button>
+                    <button class="cat-tab" data-cat="국어">📕 국어</button>
+                    <button class="cat-tab" data-cat="수학">📐 수학</button>
+                    <button class="cat-tab" data-cat="영어">🔤 영어</button>
+                    <button class="cat-tab" data-cat="탐구">🔬 탐구</button>
+                    <button class="cat-tab" data-cat="기타">✏️ 기타</button>
+                </div>
+
+                <!-- Main To-Do Item List -->
+                <div class="card todo-list-card ambient-card">
+                    <ul id="todo-list" class="todo-list">
+                        <!-- Dynamic items -->
+                    </ul>
+                    <div id="todo-empty-state" class="empty-state hidden">
+                        <i class="fa-regular fa-clipboard"></i>
+                        <p>등록된 학습 일정이 없습니다. 새로운 목표를 등록해 보세요!</p>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 3. SUBJECT-SPECIFIC HUB VIEW (국어, 수학, 영어, 탐구 전용관) -->
+            <section id="subjects-view" class="tab-view">
+                <div class="section-title-bar">
+                    <div>
+                        <h2><i class="fa-solid fa-book-open-reader"></i> 과목별 전용 학습관</h2>
+                        <p>과목별 오답노트 작성 및 실시간 스톱워치 학습 시간 기록</p>
+                    </div>
+
+                    <!-- Subject Selection Sub-tabs -->
+                    <div class="subject-select-nav">
+                        <button class="subject-tab active" data-subject="국어">📕 국어</button>
+                        <button class="subject-tab" data-subject="수학">📐 수학</button>
+                        <button class="subject-tab" data-subject="영어">🔤 영어</button>
+                        <button class="subject-tab" data-subject="탐구">🔬 탐구</button>
+                    </div>
+                </div>
+
+                <!-- Subject Header Banner -->
+                <div class="subject-hero-card ambient-card">
+                    <div class="subject-hero-left">
+                        <div class="subject-icon-badge" id="subject-badge-icon">📕</div>
+                        <div>
+                            <h2 id="subject-title-name">국어 학습관</h2>
+                            <p id="subject-desc-str">수능 문학/비문학 및 내신 문제 오답 정리와 집중 몰입 스톱워치</p>
+                        </div>
+                    </div>
+                    <div class="subject-stats-row">
+                        <div class="sub-stat-box">
+                            <span>총 누적 공부시간</span>
+                            <strong id="subject-stat-time">0시간 0분</strong>
+                        </div>
+                        <div class="sub-stat-box">
+                            <span>등록된 오답노트</span>
+                            <strong id="subject-stat-notes" class="text-blue">0개</strong>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Two Section Split: Timer & Incorrect Note Manager -->
+                <div class="subject-grid">
+                    <!-- Left: Stopwatch & Timer Module -->
+                    <div class="card stopwatch-card ambient-card">
+                        <div class="box-header">
+                            <h3><i class="fa-solid fa-stopwatch text-blue"></i> 과목 공부 스톱워치</h3>
+                            <span class="badge badge-accent" id="timer-status-badge">대기 중</span>
+                        </div>
+                        
+                        <div class="timer-display-box">
+                            <span class="timer-time" id="timer-display">00:00:00</span>
+                        </div>
+
+                        <div class="timer-controls">
+                            <button id="btn-timer-start" class="btn btn-primary btn-lg">
+                                <i class="fa-solid fa-play"></i> 시작
+                            </button>
+                            <button id="btn-timer-pause" class="btn btn-light btn-lg hidden">
+                                <i class="fa-solid fa-pause"></i> 일시정지
+                            </button>
+                            <button id="btn-timer-reset" class="btn btn-outline btn-lg">
+                                <i class="fa-solid fa-rotate-left"></i> 리셋
+                            </button>
+                            <button id="btn-timer-save" class="btn btn-gradient btn-lg">
+                                <i class="fa-solid fa-floppy-disk"></i> 시간 저장
+                            </button>
+                        </div>
+
+                        <!-- Timer Session History List -->
+                        <div class="timer-history-box mt-sm">
+                            <h4><i class="fa-solid fa-history"></i> 최근 학습 기록</h4>
+                            <ul id="subject-timer-log" class="timer-log-list">
+                                <!-- Dynamic logs -->
+                            </ul>
+                        </div>
+                    </div>
+
+                    <!-- Right: Incorrect Notes Module -->
+                    <div class="card incorrect-notes-card ambient-card">
+                        <div class="box-header">
+                            <h3><i class="fa-solid fa-pen-clip text-blue"></i> 오답노트 작성 & 관리</h3>
+                            <button class="btn btn-sm btn-primary" id="btn-open-note-form">
+                                <i class="fa-solid fa-plus"></i> 새 오답 작성
+                            </button>
+                        </div>
+
+                        <!-- Add Note Form Card (Toggleable) -->
+                        <div id="note-form-wrapper" class="note-form-card hidden">
+                            <form id="incorrect-note-form">
+                                <div class="form-row">
+                                    <div class="form-group flex-2">
+                                        <label for="note-title">문제명 / 출처</label>
+                                        <input type="text" id="note-title" class="form-input" placeholder="예: 2026 6월 모평 21번 (삼각함수)" required>
+                                    </div>
+                                    <div class="form-group flex-1">
+                                        <label for="note-topic">단원 / 유형</label>
+                                        <input type="text" id="note-topic" class="form-input" placeholder="예: 삼각함수 극값" required>
+                                    </div>
+                                </div>
+                                <div class="form-row mt-sm">
+                                    <div class="form-group flex-1">
+                                        <label for="note-my-ans">나의 오답</label>
+                                        <input type="text" id="note-my-ans" class="form-input" placeholder="예: 3번">
+                                    </div>
+                                    <div class="form-group flex-1">
+                                        <label for="note-correct-ans">정답</label>
+                                        <input type="text" id="note-correct-ans" class="form-input" placeholder="예: 5번" required>
+                                    </div>
+                                </div>
+                                <div class="form-group mt-sm">
+                                    <label for="note-solution">오답 원인 & 풀이 / 복습 핵심</label>
+                                    <textarea id="note-solution" class="form-input form-textarea" rows="3" placeholder="왜 틀렸는지, 놓친 개념과 풀이 핵심 포인트를 기록하세요..." required></textarea>
+                                </div>
+                                <div class="form-row mt-sm form-align-end">
+                                    <button type="button" class="btn btn-light" id="btn-close-note-form">취소</button>
+                                    <button type="submit" class="btn btn-primary">오답노트 저장</button>
+                                </div>
+                            </form>
+                        </div>
+
+                        <!-- Notes Search Bar -->
+                        <div class="notes-search-bar mt-sm">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="note-search-input" class="form-input" placeholder="오답노트 검색 (문제명, 단원)...">
+                        </div>
+
+                        <!-- Notes List Container -->
+                        <div id="subject-notes-list" class="notes-list-container mt-sm">
+                            <!-- Dynamic items -->
+                        </div>
+                        <div id="notes-empty-state" class="empty-state hidden">
+                            <i class="fa-solid fa-receipt"></i>
+                            <p>등록된 오답노트가 없습니다. 틀린 문제를 정리해 완벽히 내 것으로 만드세요!</p>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- 4. VOCABULARY & QUIZ VIEW -->
+            <section id="voca-view" class="tab-view">
+                <div class="section-title-bar">
+                    <div>
+                        <h2><i class="fa-solid fa-book-bookmark"></i> 영단어장 & 무작위 테스트</h2>
+                        <p>직접 만드는 나만의 고2 수능 필수 영단어장</p>
+                    </div>
+                    
+                    <!-- Sub Nav Controls -->
+                    <div class="voca-subnav">
+                        <button class="voca-subtab active" id="subtab-list">
+                            <i class="fa-solid fa-book"></i> 단어장 리스트
+                        </button>
+                        <button class="voca-subtab" id="subtab-quiz">
+                            <i class="fa-solid fa-gamepad"></i> 무작위 퀴즈
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4A. Word List Section -->
+                <div id="voca-list-section" class="voca-section active">
+                    <!-- Word Add Form -->
+                    <div class="card add-word-card ambient-card">
+                        <h3><i class="fa-solid fa-plus-circle text-blue"></i> 새 영단어 등록</h3>
+                        <form id="word-form" class="word-form">
+                            <div class="form-row gap-md">
+                                <div class="form-group flex-1">
+                                    <label for="word-english">영어 단어</label>
+                                    <input type="text" id="word-english" class="form-input" placeholder="예: perseverance" required>
+                                </div>
+                                <div class="form-group flex-1">
+                                    <label for="word-korean">뜻 (한글)</label>
+                                    <input type="text" id="word-korean" class="form-input" placeholder="예: 인내, 끈기" required>
+                                </div>
+                            </div>
+                            <div class="form-row gap-md mt-sm">
+                                <div class="form-group flex-2">
+                                    <label for="word-example">예문 (선택)</label>
+                                    <input type="text" id="word-example" class="form-input" placeholder="예: Success comes from hard work and perseverance.">
+                                </div>
+                                <div class="form-group flex-1 form-align-end">
+                                    <button type="submit" class="btn btn-primary btn-block">
+                                        <i class="fa-solid fa-floppy-disk"></i> 단어 저장
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Search and Controls -->
+                    <div class="word-tools-bar">
+                        <div class="search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="word-search-input" class="form-input" placeholder="단어 또는 뜻 검색...">
+                        </div>
+                        <div class="filter-buttons">
+                            <button class="btn btn-sm btn-light active" data-wfilter="all" id="wfilter-all">전체 보기</button>
+                            <button class="btn btn-sm btn-light" data-wfilter="unmastered" id="wfilter-unmastered">미암기 단어</button>
+                            <button class="btn btn-sm btn-light" data-wfilter="mastered" id="wfilter-mastered">암기 완료</button>
+                        </div>
+                    </div>
+
+                    <!-- Word Cards Grid -->
+                    <div id="word-grid" class="word-grid">
+                        <!-- Dynamic word cards -->
+                    </div>
+                    <div id="word-empty-state" class="empty-state hidden">
+                        <i class="fa-solid fa-language"></i>
+                        <p>등록된 단어가 없습니다. 새 단어를 추가하여 단어장을 만들어 보세요!</p>
+                    </div>
+                </div>
+
+                <!-- 4B. Random Quiz Section -->
+                <div id="voca-quiz-section" class="voca-section">
+                    <!-- Quiz Intro Setup Card -->
+                    <div id="quiz-setup-card" class="card quiz-setup-card ambient-card">
+                        <div class="quiz-setup-header">
+                            <div class="setup-icon"><i class="fa-solid fa-fire-flame-curved"></i></div>
+                            <div>
+                                <h3>무작위 단어 테스트 설정</h3>
+                                <p>등록된 단어 중 무작위로 추출하여 실전 퀴즈를 진행합니다.</p>
+                            </div>
+                        </div>
+
+                        <div class="quiz-options-grid">
+                            <div class="option-box">
+                                <label><i class="fa-solid fa-sliders"></i> 퀴즈 방식 선택</label>
+                                <div class="radio-toggle-group">
+                                    <label class="radio-toggle">
+                                        <input type="radio" name="quiz-mode" value="choice" checked>
+                                        <span class="toggle-btn"><i class="fa-solid fa-list-ol"></i> 4지 선다형</span>
+                                    </label>
+                                    <label class="radio-toggle">
+                                        <input type="radio" name="quiz-mode" value="type">
+                                        <span class="toggle-btn"><i class="fa-solid fa-keyboard"></i> 주관식 뜻 입력</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="option-box">
+                                <label><i class="fa-solid fa-hashtags"></i> 출제 단어 수</label>
+                                <div class="radio-toggle-group">
+                                    <label class="radio-toggle">
+                                        <input type="radio" name="quiz-count" value="5">
+                                        <span class="toggle-btn">5개</span>
+                                    </label>
+                                    <label class="radio-toggle">
+                                        <input type="radio" name="quiz-count" value="10" checked>
+                                        <span class="toggle-btn">10개</span>
+                                    </label>
+                                    <label class="radio-toggle">
+                                        <input type="radio" name="quiz-count" value="all">
+                                        <span class="toggle-btn">전체 단어</span>
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="quiz-start-action">
+                            <button id="btn-start-active-quiz" class="btn btn-lg btn-gradient btn-pulse">
+                                <i class="fa-solid fa-play"></i> 퀴즈 시작하기
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Active Playing Quiz Container (Hidden initially) -->
+                    <div id="quiz-play-container" class="card quiz-play-card ambient-card hidden">
+                        <div class="quiz-play-header">
+                            <div class="quiz-progress-text">
+                                문제 <strong id="quiz-current-num">1</strong> / <span id="quiz-total-num">10</span>
+                            </div>
+                            <div class="quiz-streak-badge">
+                                <i class="fa-solid fa-fire text-orange"></i> 연승: <span id="quiz-streak-cnt">0</span>
+                            </div>
+                        </div>
+                        <div class="quiz-progress-bar">
+                            <div class="quiz-progress-fill" id="quiz-bar-fill" style="width: 10%;"></div>
+                        </div>
+
+                        <!-- Word Question Box -->
+                        <div class="quiz-question-box">
+                            <span class="quiz-category-tag">Vocabulary</span>
+                            <div class="quiz-word-display">
+                                <h1 id="quiz-word-target">Perseverance</h1>
+                                <button class="btn-tts" id="btn-speak-word" title="발음 듣기">
+                                    <i class="fa-solid fa-volume-high"></i>
+                                </button>
+                            </div>
+                            <p id="quiz-hint-text" class="quiz-hint hidden">💡 힌트: <span id="hint-content"></span></p>
+                            <button id="btn-show-hint" class="btn btn-xs btn-outline">힌트 보기</button>
+                        </div>
+
+                        <!-- Answer Input Section -->
+                        <div id="quiz-choice-area" class="quiz-choices-grid">
+                            <button class="choice-btn" data-choice="0">1. 정답 선택지 A</button>
+                            <button class="choice-btn" data-choice="1">2. 정답 선택지 B</button>
+                            <button class="choice-btn" data-choice="2">3. 정답 선택지 C</button>
+                            <button class="choice-btn" data-choice="3">4. 정답 선택지 D</button>
+                        </div>
+
+                        <div id="quiz-type-area" class="quiz-type-form hidden">
+                            <form id="quiz-type-form" class="form-row">
+                                <input type="text" id="quiz-type-input" class="form-input form-input-lg" placeholder="뜻을 입력하세요..." autocomplete="off">
+                                <button type="submit" class="btn btn-primary btn-lg">제출</button>
+                            </form>
+                        </div>
+
+                        <!-- Feedback Popup Overlay -->
+                        <div id="quiz-feedback" class="quiz-feedback hidden">
+                            <div class="feedback-icon" id="feedback-icon"><i class="fa-solid fa-circle-check"></i></div>
+                            <div class="feedback-text">
+                                <h3 id="feedback-title">정답입니다! 🎉</h3>
+                                <p id="feedback-desc">원래 뜻: 인내, 끈기</p>
+                            </div>
+                            <button id="btn-next-question" class="btn btn-primary">다음 문제 <i class="fa-solid fa-arrow-right"></i></button>
+                        </div>
+                    </div>
+
+                    <!-- Quiz Result Summary Card -->
+                    <div id="quiz-result-card" class="card quiz-result-card ambient-card hidden">
+                        <div class="result-header">
+                            <div class="result-badge-icon"><i class="fa-solid fa-award"></i></div>
+                            <h2>테스트 완료!</h2>
+                            <p>수고하셨습니다. 성적 결과를 확인하세요.</p>
+                        </div>
+
+                        <div class="result-score-box">
+                            <div class="score-circle">
+                                <span class="score-value" id="result-score-percent">80%</span>
+                                <span class="score-label">정답률</span>
+                            </div>
+                            <div class="result-detail-stats">
+                                <div class="detail-item">
+                                    <span>맞춘 개수</span>
+                                    <strong id="result-correct-count" class="text-blue">8 / 10</strong>
+                                </div>
+                                <div class="detail-item">
+                                    <span>최대 연승</span>
+                                    <strong id="result-max-streak" class="text-orange">5회 🔥</strong>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Missed Words Review -->
+                        <div id="result-review-section" class="result-review-section">
+                            <h4><i class="fa-solid fa-triangle-exclamation text-red"></i> 틀린 단어 복습 노트</h4>
+                            <ul id="result-missed-list" class="missed-words-list">
+                                <!-- Dynamic list -->
+                            </ul>
+                        </div>
+
+                        <div class="result-actions">
+                            <button id="btn-quiz-retry" class="btn btn-primary btn-lg">
+                                <i class="fa-solid fa-rotate-right"></i> 다시 도전하기
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </main>
+
+        <!-- D-Day Setting Modal Container -->
+        <div id="dday-modal" class="modal-overlay hidden">
+            <div class="modal-card ambient-card">
+                <div class="modal-header">
+                    <h3><i class="fa-solid fa-calendar-star text-blue"></i> D-Day 설정 및 메인 목표 변경</h3>
+                    <button class="btn-close-modal" id="btn-close-dday-modal">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p class="modal-desc">헤더에 표시할 메인 D-Day를 선택하거나 새로운 디데이를 추가하세요.</p>
+
+                    <!-- Active D-Day List -->
+                    <div id="dday-items-list" class="dday-items-list">
+                        <!-- Dynamic items -->
+                    </div>
+
+                    <!-- Add New D-Day Form -->
+                    <div class="add-dday-box mt-sm">
+                        <h4><i class="fa-solid fa-plus-circle"></i> 새 D-Day 추가</h4>
+                        <form id="dday-form" class="form-row gap-md mt-sm">
+                            <input type="text" id="dday-title-input" class="form-input flex-2" placeholder="목표 이름 (예: 6월 모의고사)" required>
+                            <input type="date" id="dday-date-input" class="form-input flex-1" required>
+                            <button type="submit" class="btn btn-primary">추가</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Toast Notifications -->
+        <div id="toast-container" class="toast-container"></div>
+    </div>
+
+    <!-- Custom JS Script -->
+    <script src="script.js"></script>
+</body>
+</html>
