@@ -1,0 +1,669 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>웹 코딩 입문 가이드: HTML, CSS, JavaScript</title>
+  <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&display=swap" rel="stylesheet">
+  <style>
+    @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+
+    :root {
+      --bg-color: #131c31;
+      --card-bg: rgba(30, 48, 79, 0.55);
+      --border-color: rgba(255, 255, 255, 0.1);
+      --text-main: #f1f5f9;
+      --text-sub: #cbd5e1;
+      --primary: #38bdf8;
+      --primary-hover: #7dd3fc;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      scroll-behavior: smooth;
+    }
+
+    body {
+      font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, system-ui, Roboto, sans-serif;
+      background-color: var(--bg-color);
+      color: var(--text-main);
+      line-height: 1.6;
+      position: relative;
+      overflow-x: hidden;
+      min-height: 100vh;
+    }
+
+    /* 유기적인 그라데이션 애니메이션 배경 레이어 */
+    .animated-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      z-index: 0;
+      pointer-events: none;
+      overflow: hidden;
+      opacity: 0.7;
+    }
+
+    .gradient-blob {
+      position: absolute;
+      filter: blur(80px);
+      border-radius: 50%;
+      animation: moveBlob 18s infinite alternate ease-in-out;
+    }
+
+    .blob-1 {
+      top: -10%;
+      left: -10%;
+      width: 55vw;
+      height: 55vw;
+      background: radial-gradient(circle, rgba(56, 189, 248, 0.25) 0%, rgba(56, 189, 248, 0) 70%);
+      animation-duration: 15s;
+    }
+
+    .blob-2 {
+      bottom: -15%;
+      right: -10%;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, rgba(96, 165, 250, 0.2) 0%, rgba(96, 165, 250, 0) 70%);
+      animation-duration: 22s;
+      animation-direction: alternate-reverse;
+    }
+
+    .blob-3 {
+      top: 35%;
+      left: 25%;
+      width: 45vw;
+      height: 45vw;
+      background: radial-gradient(circle, rgba(129, 140, 248, 0.15) 0%, rgba(129, 140, 248, 0) 70%);
+      animation-duration: 19s;
+    }
+
+    @keyframes moveBlob {
+      0% { transform: translate(0, 0) scale(1); }
+      50% { transform: translate(80px, 60px) scale(1.15); }
+      100% { transform: translate(-60px, -70px) scale(0.9); }
+    }
+
+    /* Vanta.net 액션 배경이 적용될 상단 섹션 */
+    header {
+      width: 100%;
+      background-color: #131c31;
+      padding: 4.5rem 2rem 4rem 2rem;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+      position: relative;
+      z-index: 10;
+    }
+
+    .hero-content {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 1.5rem;
+      max-width: 1000px;
+      width: 100%;
+      text-align: left;
+    }
+
+    header h1 {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      color: #ffffff;
+      text-shadow: 0 2px 12px rgba(56, 189, 248, 0.3);
+    }
+    
+    header p {
+      font-size: 1.1rem;
+      color: var(--text-sub);
+      line-height: 1.6;
+    }
+
+    /* 상단 네비게이션 바 */
+    .nav-bar {
+      position: sticky;
+      top: 0;
+      background: rgba(19, 28, 49, 0.85);
+      backdrop-filter: blur(12px);
+      display: flex;
+      justify-content: center;
+      gap: 15px;
+      padding: 15px;
+      border-bottom: 1px solid var(--border-color);
+      z-index: 100;
+      flex-wrap: wrap;
+    }
+    .nav-btn {
+      padding: 8px 18px;
+      background: rgba(39, 58, 92, 0.6);
+      color: var(--text-sub);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+    .nav-btn:hover, .nav-btn.active {
+      background: var(--primary);
+      color: #0f172a;
+      border-color: var(--primary);
+      box-shadow: 0 0 15px rgba(56, 189, 248, 0.4);
+    }
+    
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+      position: relative;
+      z-index: 10;
+    }
+
+    .category-title {
+      font-size: 1.5rem;
+      color: #ffffff;
+      margin: 60px 0 20px 0;
+      padding-left: 0.75rem;
+      border-left: 5px solid var(--primary);
+      letter-spacing: -0.02em;
+      display: flex;
+      align-items: center;
+    }
+
+    .section-card {
+      background: var(--card-bg);
+      border-radius: 14px;
+      box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+      margin-bottom: 25px;
+      overflow: hidden;
+      border: 1px solid var(--border-color);
+      transition: all 0.35s ease;
+      backdrop-filter: blur(8px);
+    }
+    .section-card:hover {
+      transform: translateY(-4px);
+      border-color: rgba(56, 189, 248, 0.5);
+      box-shadow: 0 12px 35px rgba(56, 189, 248, 0.2);
+      background: rgba(39, 58, 92, 0.8);
+    }
+
+    .section-header {
+      background: rgba(30, 48, 79, 0.8);
+      padding: 15px 20px;
+      border-bottom: 1px solid var(--border-color);
+    }
+    .section-header h3 {
+      font-size: 1.1rem;
+      color: #ffffff;
+      font-weight: 600;
+    }
+
+    /* 반응형 그리드 */
+    .grid-content {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+    }
+
+    /* 코드 에디터 영역 스타일 */
+    .code-pane {
+      background: rgba(15, 23, 42, 0.75);
+      color: #c9d1d9;
+      padding: 20px;
+      font-family: 'Fira Code', Consolas, Monaco, monospace;
+      font-size: 0.88rem;
+      overflow-x: auto;
+      line-height: 1.6;
+      border-right: 1px solid var(--border-color);
+    }
+    .code-pane pre {
+      white-space: pre-wrap;
+    }
+
+    /* 신택스 하이라이팅 색상 */
+    .tag { color: #38bdf8; }
+    .attr { color: #93c5fd; }
+    .string { color: #7dd3fc; }
+    .prop { color: #818cf8; }
+    .keyword { color: #38bdf8; font-weight: bold; }
+    .func { color: #c084fc; }
+
+    .preview-pane {
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      background: rgba(30, 48, 79, 0.3);
+      min-height: 160px;
+    }
+
+    .demo-box {
+      border: 1px dashed rgba(255, 255, 255, 0.2);
+      padding: 16px;
+      border-radius: 8px;
+      text-align: center;
+      width: 100%;
+      background: rgba(19, 28, 49, 0.6);
+      color: #cbd5e1;
+    }
+
+    /* 공통 인터랙션 컴포넌트 */
+    .sys-btn {
+      padding: 8px 16px;
+      background: var(--primary);
+      color: #0f172a;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 0.88rem;
+      transition: all 0.25s ease;
+      box-shadow: 0 4px 15px rgba(56, 189, 248, 0.3);
+    }
+    .sys-btn:hover {
+      background: var(--primary-hover);
+      box-shadow: 0 6px 22px rgba(56, 189, 248, 0.5);
+      transform: translateY(-2px);
+    }
+    
+    .box-model-demo {
+      background: rgba(30, 58, 138, 0.6);
+      color: #93c5fd;
+      padding: 12px;
+      margin: 4px;
+      border: 3px solid #38bdf8;
+      border-radius: 6px;
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .flex-demo {
+      display: flex;
+      justify-content: space-around;
+      gap: 8px;
+    }
+    .flex-item {
+      background: rgba(67, 56, 202, 0.6);
+      color: #c7d2fe;
+      padding: 10px;
+      border-radius: 6px;
+      flex: 1;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .hover-demo {
+      background-color: rgba(39, 58, 92, 0.6);
+      padding: 14px;
+      border-radius: 8px;
+      transition: 0.25s ease;
+      cursor: pointer;
+      border: 1px solid var(--border-color);
+    }
+    .hover-demo:hover {
+      background-color: var(--primary);
+      color: #0f172a;
+      transform: translateY(-2px);
+    }
+
+    @media (max-width: 768px) {
+      header {
+        padding: 3rem 1.5rem 2rem 1.5rem;
+      }
+      .container {
+        margin: 20px auto;
+        padding: 0 12px;
+      }
+      .grid-content {
+        grid-template-columns: 1fr;
+      }
+      .code-pane {
+        border-right: none;
+        border-bottom: 1px solid var(--border-color);
+        font-size: 0.82rem;
+      }
+      .nav-bar {
+        gap: 8px;
+        padding: 10px;
+      }
+      .nav-btn {
+        padding: 6px 12px;
+        font-size: 0.82rem;
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- 유기적인 그라데이션 애니메이션 배경 레이어 -->
+  <div class="animated-bg">
+    <div class="gradient-blob blob-1"></div>
+    <div class="gradient-blob blob-2"></div>
+    <div class="gradient-blob blob-3"></div>
+  </div>
+
+  <!-- Vanta.net 액션 효과가 적용되는 상단 헤더 영역 -->
+  <header id="vanta-hero-bg">
+    <div class="hero-content">
+      <h1>웹 코딩 입문 가이드: HTML, CSS, JavaScript</h1>
+      <p>프론트엔드 개발의 기초가 되는 뼈대, 디자인, 동적 기능을 직접 코드를 확인하고 체험하며 배워보세요!</p>
+    </div>
+  </header>
+
+  <nav class="nav-bar">
+    <a href="#html-section" class="nav-btn">HTML (뼈대)</a>
+    <a href="#css-section" class="nav-btn">CSS (디자인)</a>
+    <a href="#js-section" class="nav-btn">JavaScript (동작)</a>
+  </nav>
+
+  <main class="container">
+
+    <!-- ================= HTML 섹션 (5개) ================= -->
+    <h2 id="html-section" class="category-title">01. HTML (웹페이지의 뼈대 잡기)</h2>
+
+    <section class="section-card">
+      <div class="section-header"><h3>1. 제목 만들기 (Heading 태그)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="tag">&lt;h1&gt;</span>가장 큰 제목이에요<span class="tag">&lt;/h1&gt;</span>
+<span class="tag">&lt;h3&gt;</span>조금 작은 중간 제목이에요<span class="tag">&lt;/h3&gt;</span></pre></div>
+        <div class="preview-pane">
+          <div class="demo-box" style="text-align: left;">
+            <h1 style="font-size: 1.3rem; margin-bottom: 4px; color: #fff;">가장 큰 제목이에요</h1>
+            <h3 style="font-size: 1rem; color: #cbd5e1;">조금 작은 중간 제목이에요</h3>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>2. 글 작성과 강조하기 (Paragraph & Strong)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="tag">&lt;p&gt;</span>일반적인 문장을 쓰는 공간입니다.<span class="tag">&lt;/p&gt;</span>
+<span class="tag">&lt;p&gt;&lt;strong&gt;</span>중요한 글자는 굵게 표시해요!<span class="tag">&lt;/strong&gt;&lt;/p&gt;</span></pre></div>
+        <div class="preview-pane">
+          <div class="demo-box" style="text-align: left;">
+            <p style="margin-bottom: 4px;">일반적인 문장을 쓰는 공간입니다.</p>
+            <p><strong>중요한 글자는 굵게 표시해요!</strong></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>3. 누를 수 있는 버튼 만들기 (Button 태그)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="tag">&lt;button</span> <span class="attr">class</span>=<span class="string">"sys-btn"</span><span class="tag">&gt;</span>클릭 버튼<span class="tag">&lt;/button&gt;</span></pre></div>
+        <div class="preview-pane">
+          <div class="demo-box">
+            <button class="sys-btn">클릭 버튼</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>4. 목록 나열하기 (Unordered List 태그)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="tag">&lt;ul&gt;</span>
+  <span class="tag">&lt;li&gt;</span>첫 번째 항목<span class="tag">&lt;/li&gt;</span>
+  <span class="tag">&lt;li&gt;</span>두 번째 항목<span class="tag">&lt;/li&gt;</span>
+<span class="tag">&lt;/ul&gt;</span></pre></div>
+        <div class="preview-pane">
+          <div class="demo-box">
+            <ul style="padding-left: 20px; text-align: left;">
+              <li>첫 번째 항목</li>
+              <li>두 번째 항목</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>5. 다른 페이지로 이동하는 링크 (Anchor 태그)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="tag">&lt;a</span> <span class="attr">href</span>=<span class="string">"#"</span><span class="tag">&gt;</span>여기를 눌러 이동하기<span class="tag">&lt;/a&gt;</span></pre></div>
+        <div class="preview-pane">
+          <div class="demo-box">
+            <a href="#" onclick="alert('링크가 눌렸습니다!'); return false;" style="color: #38bdf8; text-decoration: underline; font-weight: 600;">여기를 눌러 이동하기</a>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================= CSS 섹션 (5개) ================= -->
+    <h2 id="css-section" class="category-title">02. CSS (웹페이지 디자인 꾸미기)</h2>
+
+    <section class="section-card">
+      <div class="section-header"><h3>1. 배경색 바꾸기와 모서리 둥글게 하기</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="func">.box</span> {
+  <span class="prop">background-color</span>: <span class="string">#1e293b</span>;
+  <span class="prop">border-radius</span>: <span class="string">8px</span>;
+}</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box" style="background-color: #1e3a5f; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+            색상과 둥근 모서리가 적용된 상자
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>2. 여백과 테두리 다루기 (Box Model)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="func">.model</span> {
+  <span class="prop">padding</span>: <span class="string">12px</span>;
+  <span class="prop">border</span>: <span class="string">3px solid #38bdf8</span>;
+}</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box" style="border: none; padding: 0; background: transparent;">
+            <div class="box-model-demo">테두리와 안쪽 여백이 있는 상자</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>3. 마우스 올렸을 때 변화 주기 (Hover 효과)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="func">.card:hover</span> {
+  <span class="prop">background-color</span>: <span class="string">#38bdf8</span>;
+  <span class="prop">transform</span>: <span class="string">translateY(-2px)</span>;
+}</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box hover-demo">
+            여기에 마우스를 올려보세요!
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>4. 상자들을 나란히 정렬하기 (Flexbox)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="func">.container</span> {
+  <span class="prop">display</span>: <span class="string">flex</span>;
+  <span class="prop">gap</span>: <span class="string">8px</span>;
+}</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box" style="border: none; padding: 0; background: transparent;">
+            <div class="flex-demo">
+              <div class="flex-item">상자 1</div>
+              <div class="flex-item">상자 2</div>
+              <div class="flex-item">상자 3</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>5. 글자 색상과 크기 다루기</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="func">.text</span> {
+  <span class="prop">color</span>: <span class="string">#38bdf8</span>;
+  <span class="prop">font-size</span>: <span class="string">1.1rem</span>;
+  <span class="prop">font-weight</span>: <span class="string">bold</span>;
+}</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box">
+            <span style="color: #38bdf8; font-size: 1.1rem; font-weight: bold;">색상과 크기가 바뀐 글자</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+
+    <!-- ================= JavaScript 섹션 (5개) ================= -->
+    <h2 id="js-section" class="category-title">03. JavaScript (웹페이지에 움직이는 기능 넣기)</h2>
+
+    <section class="section-card">
+      <div class="section-header"><h3>1. 버튼을 누르면 글자 바꾸기</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="keyword">const</span> el = <span class="func">document.getElementById</span>(<span class="string">'target1'</span>);
+el.textContent = <span class="string">'글자가 변경되었습니다!'</span>;</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box">
+            <p id="target1" style="margin-bottom: 8px; color: var(--text-sub);">바뀌기 전 기본 글자입니다.</p>
+            <button class="sys-btn" id="btn1">글자 바꾸기</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>2. 버튼을 누르면 상자 색상 바꾸기</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="keyword">const</span> box = <span class="func">document.getElementById</span>(<span class="string">'targetBox'</span>);
+box.style.backgroundColor = <span class="string">'#38bdf8'</span>;</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div id="targetBox" style="width: 100%; padding: 10px; background: rgba(39, 58, 92, 0.8); color: white; border-radius: 6px; transition: 0.3s;">색상이 변하는 상자</div>
+            <button class="sys-btn" id="btn2">색상 변경</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>3. 클릭할 때마다 숫자가 커지는 카운터</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="keyword">let</span> count = <span class="string">0</span>;
+count++; <span class="keyword">//</span> 숫자를 1씩 증가시킵니다.</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box">
+            <p style="margin-bottom: 8px;">현재 숫자: <span id="counterValue" style="font-weight: bold; color: var(--primary);">0</span></p>
+            <button class="sys-btn" id="btnCount">숫자 올리기 (+1)</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>4. 상자를 숨겼다 나타나게 하기 (토글)</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre><span class="keyword">if</span> (elem.style.display === <span class="string">'none'</span>) {
+  elem.style.display = <span class="string">'block'</span>;
+}</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box" style="display: flex; flex-direction: column; align-items: center; gap: 8px;">
+            <div id="toggleTarget" style="background: rgba(124, 58, 237, 0.6); color: white; padding: 6px 12px; border-radius: 6px; font-weight: 600;">사라졌다 나타나는 상자</div>
+            <button class="sys-btn" id="btnToggle">숨기기 / 보이기</button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-card">
+      <div class="section-header"><h3>5. 입력창에 쓴 글자가 실시간으로 나타나기</h3></div>
+      <div class="grid-content">
+        <div class="code-pane"><pre>inputElem.<span class="keyword">oninput</span> = (e) => {
+  outputElem.textContent = e.target.value;
+};</pre></div>
+        <div class="preview-pane">
+          <div class="demo-box" style="text-align: left;">
+            <input type="text" id="userInput" placeholder="여기에 입력해보세요..." style="width: 100%; padding: 8px; margin-bottom: 6px; background: rgba(15, 23, 42, 0.8); border: 1px solid var(--border-color); color: white; border-radius: 6px;">
+            <p style="font-size: 0.88rem; color: var(--text-sub);">실시간 출력: <span id="liveOutput" style="color: var(--primary); font-weight: bold;">(대기 중)</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Vanta.js 구동을 위한 Three.js 및 Vanta.net CDN 스크립트 -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+
+  <script>
+    // Vanta.net 액션 효과 초기화 (하늘색 포인트 적용)
+    window.addEventListener('DOMContentLoaded', () => {
+      VANTA.NET({
+        el: "#vanta-hero-bg",
+        mouseControls: true,
+        touchControls: true,
+        gyroControls: false,
+        minHeight: 200.00,
+        minWidth: 200.00,
+        scale: 1.00,
+        scaleMobile: 1.00,
+        color: 0x38bdf8,         // 네트 노드 및 선 색상 (하늘색)
+        backgroundColor: 0x131c31, // 메인 페이지와 동일한 다크 네이비 배경색
+        points: 12.00,           // 점 개수
+        maxDistance: 22.00,      // 선 연결 거리
+        spacing: 18.00,          // 간격
+        showDots: true           // 점 표시 여부
+      });
+    });
+
+    /* JavaScript 상호작용 동작 구현 */
+    document.getElementById('btn1').onclick = () => {
+      const t1 = document.getElementById('target1');
+      t1.textContent = '글자가 성공적으로 변경되었습니다!';
+      t1.style.color = '#38bdf8';
+    };
+
+    const targetBox = document.getElementById('targetBox');
+    document.getElementById('btn2').onclick = () => {
+      targetBox.style.backgroundColor = '#38bdf8';
+      targetBox.style.color = '#0f172a';
+      targetBox.textContent = '하늘색으로 바뀌었어요!';
+    };
+
+    let count = 0;
+    document.getElementById('btnCount').onclick = () => {
+      count++;
+      document.getElementById('counterValue').textContent = count;
+    };
+
+    const toggleTarget = document.getElementById('toggleTarget');
+    document.getElementById('btnToggle').onclick = () => {
+      if (toggleTarget.style.display === 'none') {
+        toggleTarget.style.display = 'block';
+      } else {
+        toggleTarget.style.display = 'none';
+      }
+    };
+
+    const userInput = document.getElementById('userInput');
+    const liveOutput = document.getElementById('liveOutput');
+    userInput.oninput = (e) => {
+      liveOutput.textContent = e.target.value || '(대기 중)';
+    };
+  </script>
+
+</body>
+</html>

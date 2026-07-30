@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <title>렌주룰 오목 게임 - 테마 선택</title>
+    <style>
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: 'Malgun Gothic', sans-serif;
+            background-color: #0b0f19;
+            color: #ffffff;
+            margin-top: 20px;
+            position: relative;
+            min-height: 100vh;
+        }
+        #vanta-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            z-index: -1;
+        }
+        .controls {
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            z-index: 1;
+        }
+        button, select {
+            padding: 10px 15px;
+            font-size: 16px;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            background-color: rgba(0, 206, 201, 0.2);
+            border: 1px solid #00cec9;
+            color: #00cec9;
+            font-weight: bold;
+            transition: all 0.2s;
+        }
+        button:hover { background-color: #00cec9; color: #0b0f19; }
+        select {
+            background-color: #141b26;
+            color: #ffffff;
+        }
+        #status {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 15px;
+            color: #00cec9;
+            text-shadow: 0 0 10px rgba(0, 206, 201, 0.5);
+            z-index: 1;
+        }
+        canvas {
+            background-color: #111827;
+            border: 3px solid #00cec9;
+            box-shadow: 0 0 25px rgba(0, 206, 201, 0.3), 0 15px 35px rgba(0,0,0,0.8);
+            cursor: pointer;
+            border-radius: 8px;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="vanta-bg"></div>
+
+    <div class="controls">
+        <label for="themeSelect"><b>테마 선택:</b></label>
+        <select id="themeSelect">
+            <option value="1">테마 1: 흑돌 vs 백돌</option>
+            <option value="2">테마 2: 불(🔥) vs 물(💧)</option>
+            <option value="3">테마 3: 빨간 사과(🍎) vs 초록 사과(🍏)</option>
+            <option value="4">테마 4: 호랑이(🐯) vs 사자(🦁)</option>
+        </select>
+        <button id="startBtn">새 게임 시작</button>
+        <button id="undoBtn">뒤로가기 (무르기)</button>
+    </div>
+    
+    <div id="status">흑돌 차례입니다</div>
+    <canvas id="omokCanvas" width="600" height="600"></canvas>
+
+    <!-- Vanta.js Scripts CDN -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+    <script>
+        VANTA.NET({
+            el: "#vanta-bg",
+            mouseControls: true,
+            touchControls: true,
+            gyroControls: false,
+            minHeight: 200.00,
+            minWidth: 200.00,
+            scale: 1.00,
+            scaleMobile: 1.00,
+            color: 0x00cec9,
+            backgroundColor: 0x0b0f19
+        });
+    </script>
+
+    <script>
+        const canvas = document.getElementById("omokCanvas");
+        const ctx = canvas.getContext("2d");
+        const statusText = document.getElementById("status");
+        const startBtn = document.getElementById("startBtn");
+        const undoBtn = document.getElementById("undoBtn");
+        const themeSelect = document.getElementById("themeSelect");
+
+        const boardSize = 15;
+        const cellSize = canvas.width / (boardSize + 1);
+        
+        let board = [];
+        let moveHistory = [];
+        let currentPlayer = 1;
+        let gameOver = false;
+
+        const themes = {
+            1: { p1: "흑돌", p2: "백돌", isText: false },
+            2: { p1: "🔥", p2: "💧", isText: true },
+            3: { p1: "🍎", p2: "🍏", isText: true },
+            4: { p1: "🐯", p2: "🦁", isText: true }
+        };
+
+        function initGame() {
+            board = Array(boardSize).fill(null).map(() => Array(boardSize).fill(0));
+            moveHistory = [];
+            currentPlayer = 1;
+            gameOver = false;
+            updateStatusText();
+            draw();
+        }
+
+        function updateStatusText() {
+            let currentTheme = themes[themeSelect.value];
+            if (themeSelect.value === "1") {
+                statusText.innerText = currentPlayer === 1 ? "흑돌 차례입니다" : "백돌 차례입니다";
+            } else {
+                statusText.innerText = currentPlayer === 1 ? `${currentTheme.p1} 차례입니다` : `${currentTheme.p2} 차례입니다`;
+            }
+        }
+
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            ctx.strokeStyle = "rgba(0, 206, 201, 0.4)";
+            ctx.lineWidth = 1;
+            for (let i = 0; i < boardSize; i++) {
+                ctx.beginPath();
+                ctx.moveTo(cellSize, cellSize * (i + 1));
+                ctx.lineTo(canvas.width - cellSize, cellSize * (i + 1));
+                ctx.stroke();
+                
+                ctx.beginPath();
+                ctx.moveTo(cellSize * (i + 1), cellSize);
+                ctx.lineTo(cellSize * (i + 1), canvas.height - cellSize);
+                ctx.stroke();
+            }
+
+            const dots = [3, 7, 11];
+            ctx.fillStyle = "#00cec9";
+            for (let y of dots) {
+                for (let x of dots) {
+                    ctx.beginPath();
+                    ctx.arc(cellSize * (x + 1), cellSize * (y + 1), 4, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+            }
+
+            let currentTheme = themes[themeSelect.value];
+
+            for (let i = 0; i < moveHistory.length; i++) {
+                let move = moveHistory[i];
+                let px = cellSize * (move.x + 1);
+                let py = cellSize * (move.y + 1);
+
+                if (currentTheme.isText) {
+                    ctx.font = `${cellSize * 0.7}px sans-serif`;
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(move.player === 1 ? currentTheme.p1 : currentTheme.p2, px, py);
+                } else {
+                    ctx.beginPath();
+                    ctx.arc(px, py, cellSize * 0.4, 0, Math.PI * 2);
+                    
+                    const grad = ctx.createRadialGradient(
+                        px - 5, py - 5, 2, px, py, cellSize * 0.4
+                    );
+                    if (move.player === 1) {
+                        grad.addColorStop(0, "#4a5568");
+                        grad.addColorStop(1, "#1a202c");
+                    } else {
+                        grad.addColorStop(0, "#ffffff");
+                        grad.addColorStop(1, "#a0aec0");
+                    }
+                    ctx.fillStyle = grad;
+                    ctx.fill();
+                }
+
+                if (gameOver) {
+                    ctx.fillStyle = move.player === 1 ? "#00cec9" : "#ff4757";
+                    ctx.font = "bold 14px sans-serif";
+                    ctx.textAlign = "center";
+                    ctx.textBaseline = "middle";
+                    ctx.fillText(i + 1, px, py);
+                }
+            }
+
+            if (currentPlayer === 1 && !gameOver) {
+                ctx.strokeStyle = "#ff4757";
+                ctx.lineWidth = 2;
+                for (let y = 0; y < boardSize; y++) {
+                    for (let x = 0; x < boardSize; x++) {
+                        if (board[y][x] === 0 && checkForbidden(x, y)) {
+                            let px = cellSize * (x + 1);
+                            let py = cellSize * (y + 1);
+                            let offset = cellSize * 0.2;
+                            
+                            ctx.beginPath();
+                            ctx.moveTo(px - offset, py - offset);
+                            ctx.lineTo(px + offset, py + offset);
+                            ctx.moveTo(px + offset, py - offset);
+                            ctx.lineTo(px - offset, py + offset);
+                            ctx.stroke();
+                        }
+                    }
+                }
+            }
+        }
+
+        function checkForbidden(x, y) {
+            if (currentPlayer !== 1) return null;
+            
+            board[y][x] = 1; 
+            const dirs = [ [1,0], [0,1], [1,1], [1,-1] ];
+            let count4 = 0;
+            let count3 = 0;
+            let overline = false;
+
+            for (let [dx, dy] of dirs) {
+                let c = 1;
+                for (let i = 1; i <= 5; i++) {
+                    let nx = x + dx*i, ny = y + dy*i;
+                    if (nx>=0 && nx<boardSize && ny>=0 && ny<boardSize && board[ny][nx]===1) c++; else break;
+                }
+                for (let i = 1; i <= 5; i++) {
+                    let nx = x - dx*i, ny = y - dy*i;
+                    if (nx>=0 && nx<boardSize && ny>=0 && ny<boardSize && board[ny][nx]===1) c++; else break;
+                }
+                if (c >= 6) { overline = true; break; }
+                if (c === 5) continue; 
+
+                let str = "";
+                for(let i = -5; i <= 5; i++){
+                    let nx = x + dx*i, ny = y + dy*i;
+                    if(nx<0 || nx>=boardSize || ny<0 || ny>=boardSize) str += "2";
+                    else str += board[ny][nx];
+                }
+                
+                let isFour = false;
+                for(let i = 1; i <= 5; i++) {
+                    let sub = str.substr(i, 5);
+                    let count1 = (sub.match(/1/g) || []).length;
+                    let count0 = (sub.match(/0/g) || []).length;
+                    if(count1 === 4 && count0 === 1 && sub[5-i] === '1') {
+                        isFour = true; break;
+                    }
+                }
+                if (isFour) count4++;
+
+                let isThree = false;
+                const threePatterns = ["001110", "011100", "010110", "011010"];
+                for (let p of threePatterns) {
+                    let idx = str.indexOf(p);
+                    while (idx !== -1) {
+                        if (p[5 - idx] === '1') {
+                            isThree = true; break;
+                        }
+                        idx = str.indexOf(p, idx + 1);
+                    }
+                    if (isThree) break;
+                }
+                if (isThree) count3++;
+            }
+            
+            board[y][x] = 0; 
+
+            if (overline) return "6목금수";
+            if (count4 >= 2) return "44금수";
+            if (count3 >= 2) return "33금수";
+            return null;
+        }
+
+        function checkWin(x, y, player) {
+            const dirs = [ [1,0], [0,1], [1,1], [1,-1] ];
+            for (let [dx, dy] of dirs) {
+                let c = 1;
+                for (let i = 1; i <= 5; i++) {
+                    let nx = x + dx*i, ny = y + dy*i;
+                    if (nx>=0 && nx<boardSize && ny>=0 && ny<boardSize && board[ny][nx]===player) c++; else break;
+                }
+                for (let i = 1; i <= 5; i++) {
+                    let nx = x - dx*i, ny = y - dy*i;
+                    if (nx>=0 && nx<boardSize && ny>=0 && ny<boardSize && board[ny][nx]===player) c++; else break;
+                }
+                
+                if (player === 1 && c === 5) return true;
+                if (player === 2 && c >= 5) return true;
+            }
+            return false;
+        }
+
+        canvas.addEventListener("click", (e) => {
+            if (gameOver) return;
+
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = e.clientX - rect.left;
+            const mouseY = e.clientY - rect.top;
+            
+            const gridX = Math.round(mouseX / cellSize) - 1;
+            const gridY = Math.round(mouseY / cellSize) - 1;
+
+            if (gridX >= 0 && gridX < boardSize && gridY >= 0 && gridY < boardSize) {
+                if (board[gridY][gridX] === 0) {
+                    
+                    let forbiddenReason = checkForbidden(gridX, gridY);
+                    if (forbiddenReason) {
+                        alert("금수 자리입니다! (" + forbiddenReason + ")");
+                        return;
+                    }
+
+                    board[gridY][gridX] = currentPlayer;
+                    moveHistory.push({ x: gridX, y: gridY, player: currentPlayer });
+                    
+                    let currentTheme = themes[themeSelect.value];
+                    if (checkWin(gridX, gridY, currentPlayer)) {
+                        let winnerName = themeSelect.value === "1" ? (currentPlayer === 1 ? "흑돌" : "백돌") : (currentPlayer === 1 ? currentTheme.p1 : currentTheme.p2);
+                        
+                        themeSelect.value = "1";
+                        statusText.innerText = `${winnerName} 승리!`;
+                        gameOver = true;
+                    } else {
+                        currentPlayer = currentPlayer === 1 ? 2 : 1;
+                        updateStatusText();
+                    }
+                    draw();
+                }
+            }
+        });
+
+        startBtn.addEventListener("click", initGame);
+        themeSelect.value = "1";
+        themeSelect.addEventListener("change", () => {
+            updateStatusText();
+            draw();
+        });
+
+        undoBtn.addEventListener("click", () => {
+            if (moveHistory.length > 0 && !gameOver) {
+                let lastMove = moveHistory.pop();
+                board[lastMove.y][lastMove.x] = 0;
+                currentPlayer = lastMove.player;
+                updateStatusText();
+                draw();
+            }
+        });
+
+        initGame();
+    </script>
+</body>
+</html>
