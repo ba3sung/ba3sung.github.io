@@ -258,6 +258,66 @@
             }
         }
 
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 3rem 1.5rem 2.5rem;
+            }
+
+            .hero-content {
+                gap: 2rem;
+            }
+
+            .interactive-title {
+                font-size: clamp(2rem, 8vw, 3rem);
+            }
+
+            .top-about-box {
+                padding: 1.5rem;
+            }
+
+            .top-about-desc {
+                font-size: 1rem;
+                line-height: 1.7;
+            }
+
+            .about-visual {
+                min-width: 120px;
+                height: 120px;
+                font-size: 3rem;
+            }
+
+            .main-container {
+                padding: 3rem 1.5rem 3rem 1.5rem;
+            }
+
+            .content-wrapper {
+                gap: 2rem;
+            }
+
+            .project-card {
+                padding: 1.6rem;
+            }
+
+            .card-btn {
+                width: 100%;
+                text-align: center;
+            }
+
+            .footer-content {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .footer-links {
+                justify-content: flex-start;
+                flex-wrap: wrap;
+            }
+
+            .footer-links a {
+                margin-top: 0.5rem;
+            }
+        }
+
         /* 프로젝트 카드 스타일 */
         .project-card {
             background: rgba(30, 48, 79, 0.55);
@@ -272,13 +332,31 @@
             box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
             position: relative;
             overflow: hidden;
-            backdrop-filetr: blur(8px);
+            backdrop-filter: blur(8px);
+        }
+
+        .project-card.red {
+            border-color: rgba(248, 113, 113, 0.9);
+            box-shadow: 0 0 18px rgba(248, 113, 113, 0.18);
+        }
+
+        .project-card.yellow {
+            border-color: rgba(245, 158, 11, 0.9);
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.18);
+        }
+
+        .project-card.green {
+            border-color: rgba(34, 197, 94, 0.9);
+            box-shadow: 0 0 18px rgba(34, 197, 94, 0.18);
+        }
+
+        .project-card.blue {
+            border-color: rgba(59, 130, 246, 0.9);
+            box-shadow: 0 0 18px rgba(59, 130, 246, 0.18);
         }
 
         .project-card:hover {
             transform: translateY(-6px);
-            border-color: rgba(56, 189, 248, 0.5);
-            box-shadow: 0 12px 35px rgba(56, 189, 248, 0.2);
             background: rgba(39, 58, 92, 0.8);
         }
 
@@ -288,6 +366,51 @@
             gap: 0.7rem;
             position: relative;
             z-index: 1;
+        }
+
+        .page-footer {
+            width: 100%;
+            padding: 1.2rem 2rem 2rem 2rem;
+            display: flex;
+            justify-content: center;
+            position: relative;
+            z-index: 10;
+        }
+
+        .footer-content {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            color: rgba(226, 232, 240, 0.65);
+            font-size: 0.95rem;
+            border-top: 1px solid rgba(255, 255, 255, 0.08);
+            padding-top: 1rem;
+        }
+
+        .footer-links {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .footer-links a {
+            color: rgba(226, 232, 240, 0.7);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.35rem;
+            transition: color 0.2s ease;
+        }
+
+        .footer-links a:hover {
+            color: #ffffff;
+        }
+
+        .footer-icon {
+            font-size: 1.05rem;
         }
 
         .card-title {
@@ -350,7 +473,7 @@
                         새로운 기술을 배우는 것을 즐기며, 일상생활의 크고 작은 문제들을 코드로 해결하는 것에 흥미를 느끼고 있습니다.
                     </p>
                     <div class="top-about-email">
-                        Email : giantpeng111@gmail.com
+                        Contact : giantpeng111@gmail.com
                     </div>
                 </div>
                 <div class="about-visual">
@@ -364,48 +487,58 @@
     <main class="main-container">
         <div class="content-wrapper">
             <section class="projects-section">
-                <h2 class="section-title">Projects & Activities</h2>
+                <h2 class="section-title">프로젝트 & 활동</h2>
                 
                 <div class="project-grid">
-                    <!-- 프로젝트 1 -->
-                    <div class="project-card">
+                    <!-- Ball Fight 게임 -->
+                    <div class="project-card red">
                         <div class="card-info">
-                            <h3 class="card-title">알고리즘 문제 해결 아카이브</h3>
-                            <p class="card-desc">자료구조와 알고리즘 개념을 코드로 구현하고 최적화 과정을 기록한 공간입니다.</p>
+                            <h3 class="card-title">Ball Fight 게임 ⚽</h3>
+                            <p class="card-desc">바이브 코딩을 활용해 직접 만든 웹 게임입니다.</p>
                         </div>
-                        <a href="project1.html" class="card-btn" onclick="alert('프로젝트 1 페이지로 이동합니다.'); return false;">프로젝트 보기 &rarr;</a>
+                        <a href="ballufc.html" class="card-btn">바로가기 &rarr;</a>
                     </div>
 
-                    <!-- 프로젝트 2 -->
-                    <div class="project-card">
+                    <!-- 오목 페이지 -->
+                    <div class="project-card yellow">
                         <div class="card-info">
-                            <h3 class="card-title">웹 서비스 개발 프로젝트</h3>
-                            <p class="card-desc">HTML/CSS/JavaScript 및 프론트엔드 기술을 활용해 직접 기획하고 구현한 웹 애플리케이션입니다.</p>
+                            <h3 class="card-title">오목 게임 🧠</h3>
+                            <p class="card-desc">웹에서 직접 플레이할 수 있는 오목 게임 페이지로 이동합니다.</p>
                         </div>
-                        <a href="project2.html" class="card-btn" onclick="alert('프로젝트 2 페이지로 이동합니다.'); return false;">프로젝트 보기 &rarr;</a>
+                        <a href="omok.html" class="card-btn">바로가기 &rarr;</a>
                     </div>
 
-                    <!-- 프로젝트 3 -->
-                    <div class="project-card">
+                    <!-- 소개 페이지 -->
+                    <div class="project-card green">
                         <div class="card-info">
-                            <h3 class="card-title">오픈소스 기여 및 스터디</h3>
-                            <p class="card-desc">다양한 개발 지식을 공부하고 팀원들과 협업하여 진행한 스터디 및 토이 프로젝트 기록입니다.</p>
+                            <h3 class="card-title">웹 개발 기초 안내 💡</h3>
+                            <p class="card-desc">웹 개발의 기초 개념과 문법을 배우고 실습할 수 있는 페이지입니다.</p>
                         </div>
-                        <a href="project3.html" class="card-btn" onclick="alert('프로젝트 3 페이지로 이동합니다.'); return false;">프로젝트 보기 &rarr;</a>
+                        <a href="introduce.html" class="card-btn">바로가기 &rarr;</a>
                     </div>
 
-                    <!-- 프로젝트 4 -->
-                    <div class="project-card">
+                    <!-- 스터디 페이지 -->
+                    <div class="project-card blue">
                         <div class="card-info">
-                            <h3 class="card-title">탐구 보고서 및 R&E</h3>
-                            <p class="card-desc">컴퓨터 과학 관련 심화 주제를 선정하고 연구한 탐구 활동 결과물과 논문 요약입니다.</p>
+                            <h3 class="card-title">학습 도우미 웹 📚</h3>
+                            <p class="card-desc">타이머, 오답노트 등 학업능력 증진에 도움되는 나만의 스터디 페이지로 이동합니다.</p>
                         </div>
-                        <a href="project4.html" class="card-btn" onclick="alert('프로젝트 4 페이지로 이동합니다.'); return false;">프로젝트 보기 &rarr;</a>
+                        <a href="study.html" class="card-btn">바로가기 &rarr;</a>
                     </div>
                 </div>
             </section>
         </div>
     </main>
+
+    <footer class="page-footer">
+        <div class="footer-content">
+            <div>© 2026 박배성. All rights reserved.</div>
+            <div class="footer-links">
+                <a href="https://github.com/ba3sung" target="_blank" rel="noreferrer noopener"><span class="footer-icon">🐙</span>GitHub</a>
+                <a href="mailto:giantpeng111@gmail.com"><span class="footer-icon">✉️</span>Email</a>
+            </div>
+        </div>
+    </footer>
 
     <!-- Vanta.js 구동을 위한 Three.js 및 Vanta.net CDN 스크립트 -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r134/three.min.js"></script>
