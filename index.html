@@ -379,6 +379,24 @@
             box-shadow: 0 0 18px rgba(59, 130, 246, 0.18);
         }
 
+        /* 강제 순서: 1=빨, 2=주, 3=노, 4=초 */
+        .project-grid .project-card:nth-child(1) {
+            border-color: rgba(248, 113, 113, 0.95);
+            box-shadow: 0 0 18px rgba(248, 113, 113, 0.18);
+        }
+        .project-grid .project-card:nth-child(2) {
+            border-color: rgba(249, 115, 22, 0.95); /* 주황 */
+            box-shadow: 0 0 18px rgba(249, 115, 22, 0.18);
+        }
+        .project-grid .project-card:nth-child(3) {
+            border-color: rgba(245, 158, 11, 0.95); /* 노랑 */
+            box-shadow: 0 0 18px rgba(245, 158, 11, 0.18);
+        }
+        .project-grid .project-card:nth-child(4) {
+            border-color: rgba(34, 197, 94, 0.95); /* 초록 */
+            box-shadow: 0 0 18px rgba(34, 197, 94, 0.18);
+        }
+
         .project-card:hover {
             transform: translate3d(-6px, -10px, 0) rotate(1deg);
             background: rgba(39, 58, 92, 0.85);
@@ -562,22 +580,15 @@
                 
                 <div class="project-grid">
                     <!-- Ball Fight 게임 -->
-                    <div class="project-card red" data-href="ballufc.html" tabindex="0">
+                    <div class="project-card red" data-href="ballfight.html" tabindex="0">
                         <div class="card-info">
                             <h3 class="card-title">Ball Fight 게임 ⚽</h3>
                             <p class="card-desc">바이브 코딩을 활용해 직접 만든 웹 게임입니다.</p>
                         </div>
-                        <a href="ballufc.html" class="card-btn">바로가기 &rarr;</a>
+                        <a href="ballfight.html" class="card-btn">바로가기 &rarr;</a>
                     </div>
 
-                    <!-- 오목 페이지 -->
-                    <div class="project-card yellow" data-href="omok.html" tabindex="0">
-                        <div class="card-info">
-                            <h3 class="card-title">오목 게임 🧠</h3>
-                            <p class="card-desc">웹에서 직접 플레이할 수 있는 오목 게임 페이지로 이동합니다.</p>
-                        </div>
-                        <a href="omok.html" class="card-btn">바로가기 &rarr;</a>
-                    </div>
+                    <!-- 오목 페이지 제거됨 -->
 
                     <!-- 소개 페이지 -->
                     <div class="project-card green" data-href="introduce.html" tabindex="0">
