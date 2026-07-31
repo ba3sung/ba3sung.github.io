@@ -491,24 +491,6 @@
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
 
-        // make canvas crisp on high-DPI and responsive
-        function resizeCanvasToDisplaySize() {
-            const rect = canvas.getBoundingClientRect();
-            const dpr = window.devicePixelRatio || 1;
-            const displayWidth = Math.floor(rect.width * dpr);
-            const displayHeight = Math.floor(rect.height * dpr);
-            if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
-                canvas.width = displayWidth;
-                canvas.height = displayHeight;
-                return true;
-            }
-            return false;
-        }
-        window.addEventListener('resize', () => { resizeCanvasToDisplaySize(); });
-        // Global scale factors for quick tuning
-        const SPEED_SCALE = 1.5; /* increase movement speeds by 50% */
-        const SIZE_SCALE = 1.25; /* increase character radii by 25% */
-
         const startScreen = document.getElementById('start-screen');
         const gameoverScreen = document.getElementById('gameover-screen');
         const winnerText = document.getElementById('winner-text');
@@ -623,14 +605,10 @@
                     this.maxHp = 200; this.hp = 200; this.normalSpeed = 2.2; this.radius = 30;
                 }
 
-                // Apply global tuning scales to base stats
-                if (typeof SPEED_SCALE !== 'undefined') this.normalSpeed = this.normalSpeed * SPEED_SCALE;
-                if (typeof SIZE_SCALE !== 'undefined') this.radius = Math.round(this.radius * SIZE_SCALE);
                 this.speed = this.normalSpeed;
                 const initialAngle = getDiagonalAngle();
-                // velocities stored as pixels-per-second (scaled so dt integration preserves behavior)
-                this.vx = Math.cos(initialAngle) * this.speed * 60;
-                this.vy = Math.sin(initialAngle) * this.speed * 60;
+                this.vx = Math.cos(initialAngle) * this.speed;
+                this.vy = Math.sin(initialAngle) * this.speed;
 
                 this.isSwallowed = false;
                 this.isFast = false;
@@ -703,8 +681,8 @@
                         this.isMeditating = false;
                         this.speed = this.normalSpeed;
                         const angle = getDiagonalAngle();
-                        this.vx = Math.cos(angle) * this.speed * 60;
-                        this.vy = Math.sin(angle) * this.speed * 60;
+                        this.vx = Math.cos(angle) * this.speed;
+                        this.vy = Math.sin(angle) * this.speed;
                     }
                     return;
                 }
@@ -716,8 +694,8 @@
                 }
 
                 if (this.isFast) {
-                        this.x += this.vx * dt;
-                        this.y += this.vy * dt;
+                    this.x += this.vx;
+                    this.y += this.vy;
                     let collided = false;
                     if (this.x - this.radius < 0) { this.x = this.radius; this.vx *= -1; collided = true; }
                     else if (this.x + this.radius > canvas.width) { this.x = canvas.width - this.radius; this.vx *= -1; collided = true; }
@@ -730,8 +708,8 @@
                         this.isFast = false;
                         this.speed = this.normalSpeed;
                         const currentAngle = getDiagonalAngle();
-                        this.vx = Math.cos(currentAngle) * this.speed * 60;
-                        this.vy = Math.sin(currentAngle) * this.speed * 60;
+                        this.vx = Math.cos(currentAngle) * this.speed;
+                        this.vy = Math.sin(currentAngle) * this.speed;
                     }
                     return;
                 }
@@ -758,8 +736,8 @@
                         floatingTexts.push({ text: '꿀 파괴됨', x: canvas.width / 2, y: (canvas.height - 75) / 2, color: '#f1c40f', life: 1.5, vy: -0.5 });
                     }
                 } else {
-                    this.x += this.vx * dt;
-                    this.y += this.vy * dt;
+                    this.x += this.vx;
+                    this.y += this.vy;
                 }
 
                 if (this.x - this.radius < 0) { this.x = this.radius; this.vx *= -1; }
@@ -818,10 +796,10 @@
                                 other.isSwallowed = false;
                                 other.isFast = true;
                                 other.fastTimer = 5; 
-                                other.speed = 6.5 * (typeof SPEED_SCALE !== 'undefined' ? SPEED_SCALE : 1);
+                                other.speed = 6.5; 
                                 const angle = getDiagonalAngle();
-                                other.vx = Math.cos(angle) * other.speed * 60;
-                                other.vy = Math.sin(angle) * other.speed * 60;
+                                other.vx = Math.cos(angle) * other.speed;
+                                other.vy = Math.sin(angle) * other.speed;
                                 floatingTexts.push({ text: '폭주!', x: other.x, y: other.y - other.radius - 25, color: '#e74c3c', life: 1.0, vy: -1.0 });
                             }, 800);
                         }
@@ -861,7 +839,7 @@
                     if (this.chargeTimer <= 0) {
                         this.isCharging = false;
                         const angle = Math.atan2(other.y - this.y, other.x - this.x);
-                        gloves.push({ x: this.x, y: this.y, vx: Math.cos(angle) * 5.0 * (typeof SPEED_SCALE !== 'undefined' ? SPEED_SCALE : 1) * 60, vy: Math.sin(angle) * 5.0 * (typeof SPEED_SCALE !== 'undefined' ? SPEED_SCALE : 1) * 60, radius: Math.round(30 * (typeof SIZE_SCALE !== 'undefined' ? SIZE_SCALE : 1)), owner: this });
+                        gloves.push({ x: this.x, y: this.y, vx: Math.cos(angle) * 5.0, vy: Math.sin(angle) * 5.0, radius: 30, owner: this });
                     }
                 }
 
@@ -967,14 +945,8 @@
             const p1Info = getCharDetails(selectedP1Type);
             const p2Info = getCharDetails(selectedP2Type);
 
-            // ensure canvas internal size matches display
-            resizeCanvasToDisplaySize();
-            const centerY = canvas.height / 2;
-            const leftX = canvas.width * 0.25;
-            const rightX = canvas.width * 0.75;
-
-            p1 = new Character(leftX, centerY, selectedP1Type, p1Info.name, p1Info.color, p1Info.subColor);
-            p2 = new Character(rightX, centerY, selectedP2Type, p2Info.name, p2Info.color, p2Info.subColor);
+            p1 = new Character(180, 260, selectedP1Type, p1Info.name, p1Info.color, p1Info.subColor);
+            p2 = new Character(420, 260, selectedP2Type, p2Info.name, p2Info.color, p2Info.subColor);
 
             p1NameLabel.innerText = p1.name;
             p2NameLabel.innerText = p2.name;
@@ -1090,9 +1062,9 @@
         }
 
         function handleGloves() {
-                for (let i = gloves.length - 1; i >= 0; i--) {
+            for (let i = gloves.length - 1; i >= 0; i--) {
                 let gl = gloves[i];
-                gl.x += gl.vx * dt; gl.y += gl.vy * dt;
+                gl.x += gl.vx; gl.y += gl.vy;
                 if (gl.x < 0 || gl.x > canvas.width || gl.y < 0 || gl.y > canvas.height - 75) {
                     gloves.splice(i, 1); continue;
                 }
@@ -1161,11 +1133,11 @@
                 p2.vx += p * nx; p2.vy += p * ny;
 
                 let speed1 = Math.hypot(p1.vx, p1.vy);
-                let targetSpeed1 = (p1.isFast ? p1.speed : p1.normalSpeed) * 60; // convert to px/s
+                let targetSpeed1 = p1.isFast ? p1.speed : p1.normalSpeed;
                 if (speed1 > 0) { p1.vx = (p1.vx / speed1) * targetSpeed1; p1.vy = (p1.vy / speed1) * targetSpeed1; }
 
                 let speed2 = Math.hypot(p2.vx, p2.vy);
-                let targetSpeed2 = (p2.isFast ? p2.speed : p2.normalSpeed) * 60; // convert to px/s
+                let targetSpeed2 = p2.isFast ? p2.speed : p2.normalSpeed;
                 if (speed2 > 0) { p2.vx = (p2.vx / speed2) * targetSpeed2; p2.vy = (p2.vy / speed2) * targetSpeed2; }
             }
         }
@@ -1330,9 +1302,9 @@
             handleGloves();
             handleTrashPiles(dt);
 
-                for (let i = floatingTexts.length - 1; i >= 0; i--) {
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
                 let ft = floatingTexts[i];
-                ft.y += ft.vy * dt * 60; ft.life -= dt;
+                ft.y += ft.vy; ft.life -= dt;
                 if (ft.life <= 0) floatingTexts.splice(i, 1);
             }
 
