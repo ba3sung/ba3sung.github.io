@@ -126,6 +126,16 @@
             .results-grid { grid-template-columns: 1fr; }
         }
 
+        /* Counter responsiveness */
+        @media (max-width: 760px) {
+            .counter-layout { flex-direction: column; }
+            .text-area-wrapper textarea { height: 180px; }
+            .stats-panel { width: 100%; order: 2; }
+            .text-area-wrapper { order: 1; }
+            .btn-group { flex-wrap: wrap; }
+            .btn-group button { flex: 1 1 auto; }
+        }
+
         @media (max-width: 620px) {
             body { font-size: 14px; }
             .navbar { padding: 0.75rem 1rem; }
@@ -273,7 +283,20 @@
             document.getElementById('lineCount').textContent = text === '' ? 0 : text.split(/\n/).length;
         }
         function clearText() { document.getElementById('textInput').value = ''; calculateStats(); showToast('입력이 초기화되었습니다.', 'info'); }
-        function copyText() { const text = document.getElementById('textInput'); text.select(); document.execCommand('copy'); showToast('복사되었습니다.', 'success'); }
+        async function copyText() {
+            const textEl = document.getElementById('textInput');
+            const text = textEl.value || '';
+            try {
+                if (navigator.clipboard && navigator.clipboard.writeText) {
+                    await navigator.clipboard.writeText(text);
+                } else {
+                    textEl.select(); document.execCommand('copy');
+                }
+                showToast('복사되었습니다.', 'success');
+            } catch (err) {
+                showToast('복사에 실패했습니다.', 'error');
+            }
+        }
 
         function showToast(message, type = 'info') {
             const toast = document.getElementById('toast');

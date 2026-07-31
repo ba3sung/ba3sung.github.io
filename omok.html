@@ -66,6 +66,12 @@
             height: auto;
             max-width: 600px;
         }
+        @media (max-width: 640px) {
+            .controls { flex-direction: column; gap: 8px; align-items: stretch; width: 94vw; }
+            .controls label, .controls select, .controls button { width: 100%; }
+            #status { font-size: 18px; text-align: center; }
+            canvas { width: 96vw; max-width: none; }
+        }
     </style>
 </head>
 <body>
