@@ -1,0 +1,18 @@
+[
+  {
+    "title": "Neural Networks for Image Recognition",
+    "authors": ["Alice Kim", "Bob Lee"],
+    "year": 2021,
+    "venue": "Journal of ML",
+    "abstract": "We present a convolutional neural network architecture for image recognition...",
+    "url": "https://example.com/paper1.pdf"
+  },
+  {
+    "title": "Efficient Algorithms for Graph Problems",
+    "authors": ["Choi Min", "Park Jin"],
+    "year": 2019,
+    "venue": "Algorithms Today",
+    "abstract": "This paper studies shortest path algorithms with improved bounds...",
+    "url": "https://example.com/paper2.pdf"
+  }
+]

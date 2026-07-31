@@ -369,6 +369,11 @@
             box-shadow: 0 0 18px rgba(34, 197, 94, 0.18);
         }
 
+        .project-card.purple {
+            border-color: rgba(124, 58, 237, 0.92);
+            box-shadow: 0 0 18px rgba(124, 58, 237, 0.18);
+        }
+
         .project-card.blue {
             border-color: rgba(59, 130, 246, 0.9);
             box-shadow: 0 0 18px rgba(59, 130, 246, 0.18);
@@ -466,6 +471,49 @@
             box-shadow: 0 6px 22px rgba(56, 189, 248, 0.5);
             transform: translateY(-2px);
         }
+        
+        /* 모바일에서 레이아웃 고정 및 가독성 향상 */
+        @media (max-width: 480px) {
+            .interactive-title {
+                font-size: clamp(1.6rem, 8vw, 2.4rem);
+                flex-wrap: wrap;
+                justify-content: center;
+                text-align: center;
+            }
+
+            .interactive-title span {
+                padding: 0.08rem 0.12rem;
+            }
+
+            .project-card {
+                padding: 1rem;
+            }
+
+            .project-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .card-desc,
+            .top-about-desc {
+                word-break: break-word;
+                hyphens: auto;
+            }
+
+            .about-container {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .top-about-box {
+                width: 100%;
+            }
+
+            /* 모바일 성능/오버플로우 방지: 데코 배경 숨김 */
+            .animated-bg {
+                display: none;
+            }
+        }
     </style>
 </head>
 <body>
@@ -547,6 +595,15 @@
                             <p class="card-desc">타이머, 오답노트 등 학업능력 증진에 도움되는 나만의 스터디 페이지로 이동합니다.</p>
                         </div>
                         <a href="study.html" class="card-btn">바로가기 &rarr;</a>
+                    </div>
+
+                    <!-- ThesisFinder: 수행평가 도우미 -->
+                    <div class="project-card purple" data-href="thesisfinder.html" tabindex="0">
+                        <div class="card-info">
+                            <h3 class="card-title">ThesisFinder — 수행평가 도우미 🔎</h3>
+                            <p class="card-desc">논문 검색, 파일 변환, 글자수 계산 기능을 제공하는 도우미 웹입니다.</p>
+                        </div>
+                        <a href="thesisfinder.html" class="card-btn">바로가기 &rarr;</a>
                     </div>
                 </div>
             </section>
