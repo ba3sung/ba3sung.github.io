@@ -62,6 +62,9 @@
             cursor: pointer;
             border-radius: 8px;
             z-index: 1;
+            width: min(96vw, 600px);
+            height: auto;
+            max-width: 600px;
         }
     </style>
 </head>
@@ -105,13 +108,27 @@
     <script>
         const canvas = document.getElementById("omokCanvas");
         const ctx = canvas.getContext("2d");
+
+        // Make canvas resolution adapt to CSS size for crisp rendering on mobile
+        function resizeCanvasToDisplaySize() {
+            const rect = canvas.getBoundingClientRect();
+            const dpr = window.devicePixelRatio || 1;
+            const displayWidth = Math.floor(rect.width * dpr);
+            const displayHeight = Math.floor(rect.width * dpr); // keep square
+            if (canvas.width !== displayWidth || canvas.height !== displayHeight) {
+                canvas.width = displayWidth;
+                canvas.height = displayHeight;
+                return true;
+            }
+            return false;
+        }
         const statusText = document.getElementById("status");
         const startBtn = document.getElementById("startBtn");
         const undoBtn = document.getElementById("undoBtn");
         const themeSelect = document.getElementById("themeSelect");
 
         const boardSize = 15;
-        const cellSize = canvas.width / (boardSize + 1);
+        let cellSize = canvas.width / (boardSize + 1);
         
         let board = [];
         let moveHistory = [];
@@ -130,9 +147,17 @@
             moveHistory = [];
             currentPlayer = 1;
             gameOver = false;
+            resizeCanvasToDisplaySize();
+            cellSize = canvas.width / (boardSize + 1);
             updateStatusText();
             draw();
         }
+
+        window.addEventListener('resize', () => {
+            resizeCanvasToDisplaySize();
+            cellSize = canvas.width / (boardSize + 1);
+            draw();
+        });
 
         function updateStatusText() {
             let currentTheme = themes[themeSelect.value];
@@ -165,7 +190,7 @@
             for (let y of dots) {
                 for (let x of dots) {
                     ctx.beginPath();
-                    ctx.arc(cellSize * (x + 1), cellSize * (y + 1), 4, 0, Math.PI * 2);
+                    ctx.arc(cellSize * (x + 1), cellSize * (y + 1), Math.max(3, cellSize * 0.06), 0, Math.PI * 2);
                     ctx.fill();
                 }
             }
@@ -178,7 +203,7 @@
                 let py = cellSize * (move.y + 1);
 
                 if (currentTheme.isText) {
-                    ctx.font = `${cellSize * 0.7}px sans-serif`;
+                    ctx.font = `${Math.max(12, cellSize * 0.7)}px sans-serif`;
                     ctx.textAlign = "center";
                     ctx.textBaseline = "middle";
                     ctx.fillText(move.player === 1 ? currentTheme.p1 : currentTheme.p2, px, py);
@@ -317,18 +342,26 @@
             if (gameOver) return;
 
             const rect = canvas.getBoundingClientRect();
-            const mouseX = e.clientX - rect.left;
-            const mouseY = e.clientY - rect.top;
-            
-            const gridX = Math.round(mouseX / cellSize) - 1;
-            const gridY = Math.round(mouseY / cellSize) - 1;
+            const clientX = (e.clientX !== undefined) ? e.clientX : (e.touches && e.touches[0] && e.touches[0].clientX);
+            const clientY = (e.clientY !== undefined) ? e.clientY : (e.touches && e.touches[0] && e.touches[0].clientY);
+            const mouseX = clientX - rect.left;
+            const mouseY = clientY - rect.top;
+
+            // scale mouse coordinates to canvas internal resolution
+            const scaleX = canvas.width / rect.width;
+            const scaleY = canvas.height / rect.height;
+            const canvasX = mouseX * scaleX;
+            const canvasY = mouseY * scaleY;
+
+            const gridX = Math.round(canvasX / cellSize) - 1;
+            const gridY = Math.round(canvasY / cellSize) - 1;
 
             if (gridX >= 0 && gridX < boardSize && gridY >= 0 && gridY < boardSize) {
                 if (board[gridY][gridX] === 0) {
                     
                     let forbiddenReason = checkForbidden(gridX, gridY);
                     if (forbiddenReason) {
-                        alert("금수 자리입니다! (" + forbiddenReason + ")");
+                        statusText.innerText = "금수 자리입니다! (" + forbiddenReason + ")";
                         return;
                     }
 
