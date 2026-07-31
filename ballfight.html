@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>푸바오팸 Ball Fight</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            background-color: #0b0f19;
+            color: #ffffff;
+            font-family: 'Malgun Gothic', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            /* 모바일에서 스크롤이 가능하도록 변경 */
+            overflow: auto; 
+            padding: 20px 10px;
+        }
+        #main-layout {
+            display: flex;
+            flex-direction: row;
+            align-items: stretch;
+            justify-content: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .side-panel {
+            width: 260px;
+            min-height: 600px;
+            background: linear-gradient(135deg, rgba(20, 27, 38, 0.95), rgba(11, 15, 25, 0.95));
+            border: 2px solid rgba(0, 206, 201, 0.3);
+            border-radius: 16px;
+            padding: 15px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.8), inset 0 0 10px rgba(0, 206, 201, 0.05);
+            flex-shrink: 0;
+        }
+        .side-panel-content {
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1; 
+            gap: 8px;
+        }
+        .side-panel h3 {
+            font-size: 1rem;
+            color: #00cec9;
+            margin-bottom: 12px;
+            text-align: center;
+            text-shadow: 0 0 8px rgba(0, 206, 201, 0.4);
+            border-bottom: 1px solid rgba(0, 206, 201, 0.2);
+            padding-bottom: 8px;
+        }
+        .char-desc-card {
+            background: rgba(255, 255, 255, 0.03);
+            border-left: 3px solid #00cec9;
+            padding: 8px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+        .char-desc-card:hover {
+            background: rgba(255, 255, 255, 0.07);
+        }
+        .char-desc-title {
+            font-size: 0.85rem;
+            font-weight: bold;
+            color: #fff;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .char-desc-text {
+            font-size: 0.75rem;
+            color: #a0aec0;
+            line-height: 1.3;
+        }
+
+        #game-container {
+            position: relative;
+            /* 반응형 1:1 비율 컨테이너 유지 */
+            width: 100%;
+            max-width: 600px;
+            aspect-ratio: 1 / 1;
+            background-color: #1e272e;
+            border: 4px solid #00cec9;
+            border-radius: 16px;
+            overflow: auto;
+            box-shadow: 0 0 25px rgba(0, 206, 201, 0.4), 0 15px 35px rgba(0,0,0,0.8);
+            flex-shrink: 0;
+        }
+        .screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(135deg, rgba(30, 39, 46, 0.98), rgba(11, 15, 25, 0.98));
+            z-index: 10;
+            transition: opacity 0.3s ease;
+            padding: 10px;
+        }
+        .screen.hidden {
+            opacity: 0;
+            pointer-events: none;
+            display: none;
+        }
+        h1 {
+            font-size: clamp(1.5rem, 5vw, 2.1rem);
+            margin-bottom: 10px;
+            color: #00cec9;
+            text-shadow: 0 0 10px rgba(0, 206, 201, 0.5), 2px 2px 4px rgba(0,0,0,0.5);
+            text-align: center;
+        }
+        p {
+            font-size: clamp(0.85rem, 3vw, 1rem);
+            margin-bottom: 15px;
+            color: #bdc3c7;
+            text-align: center;
+        }
+        .player-selection-block {
+            margin-bottom: 8px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 100%;
+        }
+        .btn-row {
+            display: flex;
+            flex-wrap: wrap; /* 화면 좁아지면 버튼 자동 줄바꿈 */
+            gap: 6px;
+            justify-content: center;
+            margin-bottom: 6px;
+        }
+        button {
+            padding: 6px 12px;
+            font-size: clamp(0.75rem, 2vw, 0.85rem);
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 5px;
+            color: #000000; 
+            transition: background 0.2s, transform 0.1s, box-shadow 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2);
+        }
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 0 10px rgba(255,255,255,0.4);
+        }
+        .action-control-btn {
+            width: 100%;
+            padding: 12px;
+            background: rgba(0, 206, 201, 0.2);
+            border: 1px solid #00cec9;
+            color: #00cec9;
+            border-radius: 6px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.2s;
+            margin-top: 15px;
+        }
+        .action-control-btn:hover {
+            background: #00cec9;
+            color: #0b0f19;
+        }
+
+        button.gangsun { background-color: #e74c3c; }
+        button.jibao { background-color: #d35400; }
+        button.sewoon { background-color: #f1c40f; }
+        button.hyungjin { background-color: #1abc9c; }
+        button.youngryul { background-color: #00cec9; }
+        button.baesung { background-color: #27ae60; }
+        button.hyunwoong { background-color: #3498db; }
+        button.dongju { background-color: #9b59b6; }
+        button.jaejun { background-color: #7f8c8d; }
+
+        #ui-bar {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            /* 600px 기준 75px는 정확히 12.5% */
+            height: 12.5%;
+            background: linear-gradient(to top, rgba(11,15,25,0.95), rgba(11,15,25,0.6));
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 0 2.5%;
+            z-index: 5;
+            border-top: 1px solid rgba(0, 206, 201, 0.3);
+        }
+        .player-status-panel {
+            display: flex;
+            flex-direction: column;
+            width: 42%;
+        }
+        .panel-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 4px;
+        }
+        .name-badge {
+            font-size: clamp(0.75rem, 2.5vw, 0.95rem);
+            font-weight: bold;
+            text-shadow: 0 0 8px currentColor;
+            background: rgba(0,0,0,0.5);
+            padding: 2px 8px;
+            border-radius: 4px;
+        }
+        .hp-container {
+            position: relative;
+            width: 100%;
+            height: 20px;
+            background-color: rgba(0,0,0,0.6);
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.8);
+        }
+        .hp-bar {
+            height: 100%;
+            width: 100%;
+            transition: width 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .hp-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.6rem, 2vw, 0.75rem);
+            font-weight: 900;
+            color: #ffffff;
+            text-shadow: 1px 1px 2px #000;
+            letter-spacing: 0.5px;
+        }
+        .cooldown-container {
+            position: relative;
+            width: 100%;
+            height: 12px;
+            background-color: rgba(0,0,0,0.6);
+            border-radius: 5px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+        .cooldown-bar {
+            height: 100%;
+            width: 100%;
+            transition: width 0.1s linear;
+        }
+        .cooldown-text {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: clamp(0.5rem, 1.5vw, 0.65rem);
+            font-weight: bold;
+            color: #ffffff;
+            text-shadow: 1px 1px 1px #000;
+        }
+        .vs-badge {
+            font-weight: 900;
+            font-size: clamp(0.9rem, 3vw, 1.3rem);
+            color: #00cec9;
+            text-shadow: 0 0 10px rgba(0, 206, 201, 0.8);
+        }
+        
+        /* 캔버스는 내부 게임 좌표(600x600)를 유지합니다. 디자인은 반응형이지만
+           게임 요소의 크기/속도는 변하지 않도록 캔버스의 렌더 사이즈를 고정합니다. */
+        canvas {
+            display: block;
+            width: 600px;
+            height: 600px;
+            max-width: none;
+            background: #1e272e;
+        }
+
+        /* 반응형 미디어 쿼리 적용 */
+        @media (max-width: 1100px) {
+            #main-layout {
+                flex-direction: column;
+                align-items: center;
+            }
+            .side-panel {
+                width: 100%;
+                max-width: 600px;
+                min-height: auto;
+            }
+            .side-panel-content {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+                gap: 10px;
+            }
+            .side-panel h3 {
+                grid-column: 1 / -1;
+                margin-bottom: 8px;
+            }
+            .action-control-btn {
+                margin-top: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div id="main-layout">
+        <!-- 좌측 캐릭터 설명 패널 -->
+        <div class="side-panel">
+            <div class="side-panel-content">
+                <h3>&lt; 캐릭터 정보 &gt;</h3>
+                <div class="char-desc-card" style="border-color: #e74c3c;">
+                    <div class="char-desc-title">황강선 <span style="color:#e74c3c;">HP 300</span></div>
+                    <div class="char-desc-text">상대를 집어삼킨 뒤 초고속으로 폭주합니다.</div>
+                </div>
+                <div class="char-desc-card" style="border-color: #d35400;">
+                    <div class="char-desc-title">지바오 <span style="color:#d35400;">HP 250</span></div>
+                    <div class="char-desc-text">뒤후려차기 또는 명상 회복을 시전합니다.</div>
+                </div>
+                <div class="char-desc-card" style="border-color: #f1c40f;">
+                    <div class="char-desc-title">김세운 <span style="color:#f1c40f;">HP 100</span></div>
+                    <div class="char-desc-text">패배 시 곰돌이 푸로 부활합니다.</div>
+                </div>
+                <div class="char-desc-card" style="border-color: #1abc9c;">
+                    <div class="char-desc-title">조형진 <span style="color:#1abc9c;">HP 200</span></div>
+                    <div class="char-desc-text">베타 조각을 수집해 알파로 각성합니다.</div>
+                </div>
+                <div class="char-desc-card" style="border-color: #00cec9;">
+                    <div class="char-desc-title">김영율 <span style="color:#00cec9;">HP 200</span></div>
+                    <div class="char-desc-text">파도풀을 전개하여 체력을 흡수합니다.</div>
+                </div>
+            </div>
+            <button class="action-control-btn" onclick="resetGameConfig()">초기화</button>
+        </div>
+
+        <!-- 중앙 게임 컨테이너 -->
+        <div id="game-container">
+            <div id="start-screen" class="screen">
+                <h1>푸바오팸 Ball Fight</h1>
+                <p>20729 박배성</p>
+                
+                <div class="player-selection-block">
+                    <p style="font-size: 0.85rem; color: #00cec9; margin-bottom: 3px;"><b>플레이어 1 선택</b></p>
+                    <div class="btn-row">
+                        <button class="gangsun" onclick="selectP1('gangsun')">황강선</button>
+                        <button class="jibao" onclick="selectP1('jibao')">지바오</button>
+                        <button class="sewoon" onclick="selectP1('sewoon')">김세운</button>
+                        <button class="hyungjin" onclick="selectP1('hyungjin')">조형진</button>
+                        <button class="youngryul" onclick="selectP1('youngryul')">김영율</button>
+                    </div>
+                    <div class="btn-row">
+                        <button class="baesung" onclick="selectP1('baesung')">박배성</button>
+                        <button class="hyunwoong" onclick="selectP1('hyunwoong')">최현웅</button>
+                        <button class="dongju" onclick="selectP1('dongju')">곽동주</button>
+                        <button class="jaejun" onclick="selectP1('jaejun')">임재준</button>
+                    </div>
+                </div>
+
+                <div class="player-selection-block">
+                    <p style="font-size: 0.85rem; color: #ff4757; margin-bottom: 3px;"><b>플레이어 2 선택</b></p>
+                    <div class="btn-row">
+                        <button class="gangsun" onclick="selectP2('gangsun')">황강선</button>
+                        <button class="jibao" onclick="selectP2('jibao')">지바오</button>
+                        <button class="sewoon" onclick="selectP2('sewoon')">김세운</button>
+                        <button class="hyungjin" onclick="selectP2('hyungjin')">조형진</button>
+                        <button class="youngryul" onclick="selectP2('youngryul')">김영율</button>
+                    </div>
+                    <div class="btn-row">
+                        <button class="baesung" onclick="selectP2('baesung')">박배성</button>
+                        <button class="hyunwoong" onclick="selectP2('hyunwoong')">최현웅</button>
+                        <button class="dongju" onclick="selectP2('dongju')">곽동주</button>
+                        <button class="jaejun" onclick="selectP2('jaejun')">임재준</button>
+                    </div>
+                </div>
+
+                <div style="margin-top: 10px;">
+                    <button id="start-btn" onclick="startGame()" style="background-color: #00cec9; color: #121212; font-size: 1rem; padding: 10px 24px;" disabled>매칭을 완료해주세요</button>
+                </div>
+            </div>
+
+            <div id="gameover-screen" class="screen hidden">
+                <h1 id="winner-text">승리자: 없음</h1>
+                <p id="gameover-desc">경기가 종료되었습니다.</p>
+                <button onclick="resetToMenu()" style="background-color: #00cec9; color: #121212; margin-top: 15px;">메인으로 돌아가기</button>
+            </div>
+
+            <!-- 캔버스 자체 속성(width, height)은 로직 유지를 위해 600 고정 -->
+            <canvas id="gameCanvas" width="600" height="600"></canvas>
+
+            <div id="ui-bar">
+                <div class="player-status-panel">
+                    <div class="panel-top-row">
+                        <span id="p1-name-label" class="name-badge" style="color: #00cec9;">P1 대기중</span>
+                    </div>
+                    <div class="hp-container">
+                        <div id="p1-hp" class="hp-bar" style="background: linear-gradient(90deg, #00b5b1, #00cec9); box-shadow: 0 0 8px #00cec9;"></div>
+                        <div id="p1-hp-text" class="hp-text">150 / 150</div>
+                    </div>
+                    <div class="cooldown-container">
+                        <div id="p1-cd-bar" class="cooldown-bar" style="background: #00cec9; box-shadow: 0 0 5px #00cec9;"></div>
+                        <div id="p1-cd-text" class="cooldown-text">대기중</div>
+                    </div>
+                </div>
+
+                <div class="vs-badge">VS</div>
+
+                <div class="player-status-panel" style="align-items: flex-end;">
+                    <div class="panel-top-row" style="flex-direction: row-reverse;">
+                        <span id="p2-name-label" class="name-badge" style="color: #ff4757;">P2 대기중</span>
+                    </div>
+                    <div class="hp-container">
+                        <div id="p2-hp" class="hp-bar" style="background: linear-gradient(90deg, #ff6b81, #ff4757); box-shadow: 0 0 8px #ff4757;"></div>
+                        <div id="p2-hp-text" class="hp-text">150 / 150</div>
+                    </div>
+                    <div class="cooldown-container">
+                        <div id="p2-cd-bar" class="cooldown-bar" style="background: #ff4757; box-shadow: 0 0 5px #ff4757;"></div>
+                        <div id="p2-cd-text" class="cooldown-text">대기중</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 우측 캐릭터 설명 패널 -->
+        <div class="side-panel">
+            <div class="side-panel-content">
+                <h3>&lt; 캐릭터 정보 &gt;</h3>
+                <div class="char-desc-card" style="border-color: #27ae60;">
+                    <div class="char-desc-title">박배성 <span style="color:#27ae60;">HP 200</span></div>
+                    <div class="char-desc-text">전면 폭격 경고로 적에게 피해를 줍니다.</div>
+                </div>
+                <div class="char-desc-card" style="border-color: #3498db;">
+                    <div class="char-desc-title">최현웅 <span style="color:#3498db;">HP 150</span></div>
+                    <div class="char-desc-text">안경을 획득해 체력을 회복합니다.</div>
+                </div>
+                <div class="char-desc-card" style="border-color: #9b59b6;">
+                    <div class="char-desc-title">곽동주 <span style="color:#9b59b6;">HP 300</span></div>
+                    <div class="char-desc-text">글러브 미사일을 강력하게 발사합니다.</div>
+                </div>
+                <div class="char-desc-card" style="border-color: #7f8c8d;">
+                    <div class="char-desc-title">임재준 <span style="color:#85929e;">HP 200</span></div>
+                    <div class="char-desc-text">쓰레기 더미를 소환해 봉사상을 노립니다.</div>
+                </div>
+                <div class="char-desc-card" style="border-color: #e67e22;">
+                    <div class="char-desc-title">곰돌이 푸 <span style="color:#f1c40f;">HP 250</span></div>
+                    <div class="char-desc-text">김세운 부활형태. 꿀을 발라 적을 구속합니다.</div>
+                </div>
+            </div>
+            <button class="action-control-btn" id="pause-btn" onclick="togglePause()">일시정지</button>
+        </div>
+    </div>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+
+        // 게임 로직은 고정된 내부 해상도(600x600)를 기준으로 동작하도록 합니다.
+        // 기존 값들이 프레임당(px/frame) 단위로 설정되어 있어 프레임레이트에
+        // 민감했기 때문에, 초당 단위(px/s)로 변환해 dt를 곱해 위치를 업데이트합니다.
+        const LEGACY_FPS = 60; // 기존 수치를 초당 단위로 변환할 때 사용
+
+        const startScreen = document.getElementById('start-screen');
+        const gameoverScreen = document.getElementById('gameover-screen');
+        const winnerText = document.getElementById('winner-text');
+        
+        const p1HpBar = document.getElementById('p1-hp');
+        const p1HpText = document.getElementById('p1-hp-text');
+        const p2HpBar = document.getElementById('p2-hp');
+        const p2HpText = document.getElementById('p2-hp-text');
+
+        const p1NameLabel = document.getElementById('p1-name-label');
+        const p2NameLabel = document.getElementById('p2-name-label');
+        const p1CdBar = document.getElementById('p1-cd-bar');
+        const p1CdText = document.getElementById('p1-cd-text');
+        const p2CdBar = document.getElementById('p2-cd-bar');
+        const p2CdText = document.getElementById('p2-cd-text');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+
+        let selectedP1Type = null;
+        let selectedP2Type = null;
+        let isPaused = false;
+
+        function selectP1(type) {
+            selectedP1Type = type;
+            highlightSelection('p1', type);
+            checkReady();
+        }
+
+        function selectP2(type) {
+            selectedP2Type = type;
+            highlightSelection('p2', type);
+            checkReady();
+        }
+
+        function highlightSelection(player, type) {
+            const block = startScreen.querySelectorAll('.player-selection-block')[player === 'p1' ? 0 : 1];
+            const buttons = block.querySelectorAll('button');
+            buttons.forEach(btn => {
+                btn.style.outline = 'none';
+                btn.style.opacity = '0.6';
+            });
+            const targetBtn = Array.from(buttons).find(b => b.getAttribute('onclick').includes(type));
+            if (targetBtn) {
+                targetBtn.style.outline = '3px solid #fff';
+                targetBtn.style.opacity = '1';
+            }
+        }
+
+        function checkReady() {
+            if (selectedP1Type && selectedP2Type) {
+                startBtn.disabled = false;
+                startBtn.innerText = "대전 시작하기";
+            }
+        }
+
+        function getDiagonalAngle() {
+            let angle;
+            do {
+                angle = Math.random() * Math.PI * 2;
+                let mod = angle % (Math.PI / 2);
+                if (mod > 0.3 && mod < (Math.PI / 2 - 0.3)) {
+                    break;
+                }
+            } while (true);
+            return angle;
+        }
+
+        let isRunning = false;
+        let p1, p2;
+        let glasses = [];
+        let betaItems = [];
+        let gloves = [];
+        let trashPiles = [];
+        let floatingTexts = [];
+        let glassSpawnTimer = 0;
+
+        let globalFreezeTimer = 0;
+        let baesungEffect = null;
+        
+        let honeySide = null; 
+        let honeyAccumulatedDamage = 0; 
+        let honeyRespawnTimer = 0;      
+
+        let waterZone = null;
+
+        class Character {
+            constructor(x, y, type, name, color, subColor) {
+                this.x = x;
+                this.y = y;
+                this.type = type; 
+                this.name = name;
+                this.color = color;
+                this.subColor = subColor;
+
+                if (type === 'hyunwoong') {
+                    this.maxHp = 150; this.hp = 150; this.normalSpeed = 2.4 * LEGACY_FPS; this.radius = 20; 
+                } else if (type === 'gangsun') {
+                    this.maxHp = 300; this.hp = 300; this.normalSpeed = 2.1 * LEGACY_FPS; this.radius = 40; 
+                } else if (type === 'dongju') {
+                    this.maxHp = 300; this.hp = 300; this.normalSpeed = 2.1 * LEGACY_FPS; this.radius = 40; 
+                } else if (type === 'hyungjin') {
+                    this.maxHp = 200; this.hp = 200; this.normalSpeed = 2.2 * LEGACY_FPS; this.radius = 30;
+                } else if (type === 'jibao') {
+                    this.maxHp = 250; this.hp = 250; this.normalSpeed = 2.2 * LEGACY_FPS; this.radius = 32;
+                } else if (type === 'jaejun') {
+                    this.maxHp = 200; this.hp = 200; this.normalSpeed = 2.2 * LEGACY_FPS; this.radius = 30;
+                } else if (type === 'baesung') {
+                    this.maxHp = 200; this.hp = 200; this.normalSpeed = 2.2 * LEGACY_FPS; this.radius = 32;
+                } else if (type === 'sewoon') {
+                    this.maxHp = 100; this.hp = 100; this.normalSpeed = 2.3 * LEGACY_FPS; this.radius = 28;
+                } else if (type === 'youngryul') {
+                    this.maxHp = 200; this.hp = 200; this.normalSpeed = 2.2 * LEGACY_FPS; this.radius = 30;
+                }
+
+                this.speed = this.normalSpeed;
+                const initialAngle = getDiagonalAngle();
+                this.vx = Math.cos(initialAngle) * this.speed;
+                this.vy = Math.sin(initialAngle) * this.speed;
+
+                this.isSwallowed = false;
+                this.isFast = false;
+                this.fastTimer = 0;
+
+                this.skillProgress = 0; 
+                this.isCharging = false;
+                this.chargeTimer = 0;
+
+                this.betaCount = 0;
+                this.betaSpawnTimer = 0;
+                this.isAlpha = false;
+                this.alphaTimer = 0;
+
+                this.isMeditating = false;
+                this.meditateTimer = 0;
+
+                this.jaejunTimer = 0;
+                this.baesungTimer = 0;
+                this.youngryulTimer = 0;
+                
+                this.hasRevivedAsPooh = false;
+
+                this.hitFlashTimer = 0;
+                this.healFlashTimer = 0;
+            }
+
+            takeDamage(amount) {
+                this.hp = Math.max(0, this.hp - amount);
+                this.hitFlashTimer = 0.2;
+                floatingTexts.push({ text: `-${Math.round(amount)}`, x: this.x, y: this.y - this.radius - 15, color: '#ff4757', life: 0.8, vy: -1.2 * LEGACY_FPS });
+            }
+
+            takeDotDamage(amount, dt) {
+                this.hp = Math.max(0, this.hp - amount);
+                this.hitFlashTimer = 0.2;
+                if (Math.random() < 0.08) {
+                    floatingTexts.push({ text: '🩸', x: this.x + (Math.random() * 20 - 10), y: this.y + (Math.random() * 20 - 10), color: '#ff4757', life: 0.5, vy: 1.0 * LEGACY_FPS });
+                }
+            }
+
+            heal(amount) {
+                this.hp = Math.min(this.maxHp, this.hp + amount);
+                this.healFlashTimer = 0.3;
+                floatingTexts.push({ text: `+${Math.round(amount)}`, x: this.x, y: this.y - this.radius - 15, color: '#2ecc71', life: 0.9, vy: -1.2 * LEGACY_FPS });
+            }
+
+            takeDotHeal(amount, dt) {
+                this.hp = Math.min(this.maxHp, this.hp + amount);
+                this.healFlashTimer = 0.3;
+                if (Math.random() < 0.08) {
+                    floatingTexts.push({ text: '➕', x: this.x + (Math.random() * 20 - 10), y: this.y + (Math.random() * 20 - 10), color: '#2ecc71', life: 0.5, vy: -1.0 * LEGACY_FPS });
+                }
+            }
+
+            update(other, dt) {
+                if (this.hitFlashTimer > 0) this.hitFlashTimer -= dt;
+                if (this.healFlashTimer > 0) this.healFlashTimer -= dt;
+
+                if (globalFreezeTimer > 0) return;
+                if (this.isSwallowed) {
+                    this.x = other.x;
+                    this.y = other.y;
+                    return;
+                }
+
+                if (this.isMeditating) {
+                    this.meditateTimer -= dt;
+                    if (this.meditateTimer <= 0) {
+                        this.isMeditating = false;
+                        this.speed = this.normalSpeed;
+                        const angle = getDiagonalAngle();
+                        this.vx = Math.cos(angle) * this.speed;
+                        this.vy = Math.sin(angle) * this.speed;
+                    }
+                    return;
+                }
+
+                if (this.isAlpha) {
+                    this.alphaTimer -= dt;
+                    other.hp = Math.max(0, other.hp - (other.maxHp / 30) * dt);
+                    if (this.alphaTimer <= 0) other.hp = 0;
+                }
+
+                if (this.isFast) {
+                    this.x += this.vx * dt;
+                    this.y += this.vy * dt;
+                    let collided = false;
+                    if (this.x - this.radius < 0) { this.x = this.radius; this.vx *= -1; collided = true; }
+                    else if (this.x + this.radius > canvas.width) { this.x = canvas.width - this.radius; this.vx *= -1; collided = true; }
+                    if (this.y - this.radius < 0) { this.y = this.radius; this.vy *= -1; collided = true; }
+                    else if (this.y + this.radius > canvas.height - 75) { this.y = canvas.height - 75 - this.radius; this.vy *= -1; collided = true; }
+                    if (collided) this.takeDamage(10);
+
+                    this.fastTimer -= dt;
+                    if (this.fastTimer <= 0) {
+                        this.isFast = false;
+                        this.speed = this.normalSpeed;
+                        const currentAngle = getDiagonalAngle();
+                        this.vx = Math.cos(currentAngle) * this.speed;
+                        this.vy = Math.sin(currentAngle) * this.speed;
+                    }
+                    return;
+                }
+
+                let stuckOnHoney = false;
+                if (honeySide && this.type !== 'pooh') {
+                    if (honeySide === 'top' && this.y - this.radius <= 15) { stuckOnHoney = true; this.y = this.radius; }
+                    else if (honeySide === 'bottom' && this.y + this.radius >= canvas.height - 75 - 15) { stuckOnHoney = true; this.y = canvas.height - 75 - this.radius; }
+                    else if (honeySide === 'left' && this.x - this.radius <= 15) { stuckOnHoney = true; this.x = this.radius; }
+                    else if (honeySide === 'right' && this.x + this.radius >= canvas.width - 15) { stuckOnHoney = true; this.x = canvas.width - this.radius; }
+                }
+
+                if (stuckOnHoney) {
+                    this.vx = 0;
+                    this.vy = 0;
+                    let damageStep = 20 * dt;
+                    honeyAccumulatedDamage += damageStep;
+                    this.takeDotDamage(damageStep, dt);
+
+                    if (honeyAccumulatedDamage >= 50) {
+                        honeySide = null;
+                        honeyAccumulatedDamage = 0;
+                        honeyRespawnTimer = 10.0;
+                        floatingTexts.push({ text: '꿀 파괴됨', x: canvas.width / 2, y: (canvas.height - 75) / 2, color: '#f1c40f', life: 1.5, vy: -0.5 * LEGACY_FPS });
+                    }
+                } else {
+                    this.x += this.vx * dt;
+                    this.y += this.vy * dt;
+                }
+
+                if (this.x - this.radius < 0) { this.x = this.radius; this.vx *= -1; }
+                else if (this.x + this.radius > canvas.width) { this.x = canvas.width - this.radius; this.vx *= -1; }
+                if (this.y - this.radius < 0) { this.y = this.radius; this.vy *= -1; }
+                else if (this.y + this.radius > canvas.height - 75) { this.y = canvas.height - 75 - this.radius; this.vy *= -1; }
+
+                if (this.type === 'youngryul') {
+                    this.youngryulTimer += dt;
+                    if (!waterZone && this.youngryulTimer >= 10) {
+                        this.youngryulTimer = 0;
+                        waterZone = {
+                            active: true,
+                            timer: 5.0, 
+                            cx: canvas.width / 2,
+                            cy: (canvas.height - 75) / 2,
+                            radius: 140,
+                            owner: this
+                        };
+                        floatingTexts.push({ text: '파도풀 전개', x: waterZone.cx, y: waterZone.cy - 150, color: '#00cec9', life: 1.5, vy: -0.5 * LEGACY_FPS });
+                    }
+                }
+
+                if (waterZone && waterZone.active && waterZone.owner === this) {
+                    let distToCenter = Math.hypot(other.x - waterZone.cx, other.y - waterZone.cy);
+                    if (distToCenter <= waterZone.radius + other.radius) {
+                        let damageAmount = 35 * dt;
+                        other.takeDotDamage(damageAmount, dt);
+                        let healAmount = damageAmount * 0.40;
+                        this.takeDotHeal(healAmount, dt); 
+                    }
+                }
+
+                if (this.type === 'baesung') {
+                    this.baesungTimer += dt;
+                    if (this.baesungTimer >= 10) {
+                        this.baesungTimer = 0;
+                        let targetSide = Math.random() < 0.5 ? 'top' : 'bottom';
+                        globalFreezeTimer = 1.0; 
+                        baesungEffect = { phase: 'warning', timer: 1.0, targetSide: targetSide, caster: this };
+                    }
+                }
+
+                if (this.type === 'gangsun') {
+                    this.skillProgress += dt;
+                    if (this.skillProgress > 15) this.skillProgress = 15;
+                    if (this.skillProgress >= 15 && !other.isFast && !other.isSwallowed) {
+                        let dist = Math.hypot(this.x - other.x, this.y - other.y);
+                        if (dist < this.radius + other.radius) {
+                            other.isSwallowed = true;
+                            this.skillProgress = 0; 
+                            floatingTexts.push({ text: '야미~~', x: this.x, y: this.y - this.radius - 25, color: '#e74c3c', life: 1.0, vy: -1.0 * LEGACY_FPS });
+
+                            setTimeout(() => {
+                                if (!isRunning) return;
+                                other.isSwallowed = false;
+                                other.isFast = true;
+                                other.fastTimer = 5; 
+                                other.speed = 6.5 * LEGACY_FPS; 
+                                const angle = getDiagonalAngle();
+                                other.vx = Math.cos(angle) * other.speed;
+                                other.vy = Math.sin(angle) * other.speed;
+                                floatingTexts.push({ text: '폭주!', x: other.x, y: other.y - other.radius - 25, color: '#e74c3c', life: 1.0, vy: -1.0 * LEGACY_FPS });
+                            }, 800);
+                        }
+                    }
+                }
+
+                if (this.type === 'dongju') {
+                    if (!this.isCharging) {
+                        this.skillProgress += dt;
+                        if (this.skillProgress >= 5) {
+                            this.skillProgress = 0;
+                            this.isCharging = true;
+                            this.chargeTimer = 1;
+                        }
+                    }
+                }
+
+                if (this.type === 'jibao') {
+                    this.skillProgress += dt;
+                    if (this.skillProgress >= 7) {
+                        this.skillProgress = 0;
+                        if (this.hp > 100) {
+                            other.takeDamage(50);
+                            floatingTexts.push({ text: '얍!', x: this.x, y: this.y - this.radius - 25, color: '#e67e22', life: 1.0, vy: -1.0 * LEGACY_FPS });
+                        } else {
+                            this.isMeditating = true;
+                            this.meditateTimer = 3.0;
+                            this.vx = 0; this.vy = 0;
+                            this.heal(100);
+                            floatingTexts.push({ text: '명상 중', x: this.x, y: this.y - this.radius - 25, color: '#3498db', life: 3.0, vy: 0 });
+                        }
+                    }
+                }
+
+                if (this.type === 'dongju' && this.isCharging) {
+                    this.chargeTimer -= dt;
+                    if (this.chargeTimer <= 0) {
+                        this.isCharging = false;
+                        const angle = Math.atan2(other.y - this.y, other.x - this.x);
+                        gloves.push({ x: this.x, y: this.y, vx: Math.cos(angle) * 5.0 * LEGACY_FPS, vy: Math.sin(angle) * 5.0 * LEGACY_FPS, radius: 30, owner: this });
+                    }
+                }
+
+                if (this.type === 'hyungjin' && !this.isAlpha) {
+                    this.betaSpawnTimer += dt;
+                    if (this.betaSpawnTimer >= 5) {
+                        this.betaSpawnTimer = 0;
+                        const rx = Math.random() * (canvas.width - 60) + 30;
+                        const ry = Math.random() * (canvas.height - 75 - 70) + 35;
+                        betaItems.push({ x: rx, y: ry, radius: 20 });
+                    }
+                }
+
+                if (this.type === 'jaejun') {
+                    this.jaejunTimer += dt;
+                    if (this.jaejunTimer >= 12) {
+                        this.jaejunTimer = 0;
+                        const rx = Math.random() * (canvas.width - 80) + 40;
+                        const ry = Math.random() * (canvas.height - 75 - 80) + 40;
+                        trashPiles.push({ x: rx, y: ry, radius: 28 });
+                        floatingTexts.push({ text: '쓰레기 소환', x: rx, y: ry - 35, color: '#7f8c8d', life: 1.2, vy: -0.8 * LEGACY_FPS });
+                    }
+                }
+            }
+
+            draw() {
+                ctx.save();
+                ctx.beginPath();
+                
+                let drawRadius = this.radius;
+                let offsetX = 0;
+                let offsetY = 0;
+
+                if (this.isSwallowed) {
+                    drawRadius = this.radius * 0.4;
+                    offsetX = (Math.random() - 0.5) * 6;
+                    offsetY = (Math.random() - 0.5) * 6;
+                } else if (this.isFast) {
+                    offsetX = (Math.random() - 0.5) * 4;
+                    offsetY = (Math.random() - 0.5) * 4;
+                }
+
+                ctx.arc(this.x + offsetX, this.y + offsetY, drawRadius, 0, Math.PI * 2);
+                
+                let charGradient;
+                if (this.hitFlashTimer > 0) {
+                    charGradient = ctx.createRadialGradient(this.x - 5, this.y - 5, 2, this.x, this.y, drawRadius);
+                    charGradient.addColorStop(0, '#ffffff');
+                    charGradient.addColorStop(1, '#ff4757');
+                } else if (this.healFlashTimer > 0) {
+                    charGradient = ctx.createRadialGradient(this.x - 5, this.y - 5, 2, this.x, this.y, drawRadius);
+                    charGradient.addColorStop(0, '#ffffff');
+                    charGradient.addColorStop(1, '#2ecc71');
+                } else if (this.isAlpha) {
+                    charGradient = ctx.createRadialGradient(this.x - 6, this.y - 6, 2, this.x, this.y, drawRadius);
+                    charGradient.addColorStop(0, '#f1c40f');
+                    charGradient.addColorStop(1, '#d35400');
+                } else {
+                    charGradient = ctx.createRadialGradient(this.x - 6, this.y - 6, 3, this.x, this.y, drawRadius);
+                    charGradient.addColorStop(0, this.subColor);
+                    charGradient.addColorStop(1, this.color);
+                }
+
+                ctx.fillStyle = charGradient;
+                ctx.fill();
+                ctx.closePath();
+
+                if (this.isFast || this.isAlpha) {
+                    ctx.beginPath();
+                    ctx.arc(this.x + offsetX, this.y + offsetY, drawRadius + 6, 0, Math.PI * 2);
+                    ctx.strokeStyle = this.isAlpha ? 'rgba(241, 196, 15, 0.6)' : 'rgba(231, 76, 60, 0.6)';
+                    ctx.lineWidth = 3;
+                    ctx.stroke();
+                    ctx.closePath();
+                }
+
+                ctx.fillStyle = '#fff';
+                ctx.font = '12px Malgun Gothic';
+                ctx.textAlign = 'center';
+                let displayName = this.isAlpha ? '알파 ' + this.name : this.name;
+                ctx.fillText(displayName, this.x + offsetX, this.y + offsetY - drawRadius - 8);
+
+                ctx.restore();
+            }
+        }
+
+        function startGame() {
+            startScreen.classList.add('hidden');
+            gameoverScreen.classList.add('hidden');
+
+            const getCharDetails = (type) => {
+                if (type === 'gangsun') return { name: '황강선', color: '#c0392b', subColor: '#e74c3c' };
+                if (type === 'jibao') return { name: '지바오', color: '#d35400', subColor: '#eb984e' };
+                if (type === 'sewoon') return { name: '김세운', color: '#d68910', subColor: '#f39c12' };
+                if (type === 'hyungjin') return { name: '조형진', color: '#16a085', subColor: '#45b39d' };
+                if (type === 'youngryul') return { name: '김영율', color: '#00838f', subColor: '#00acc1' };
+                if (type === 'baesung') return { name: '박배성', color: '#1e8449', subColor: '#58d68d' };
+                if (type === 'hyunwoong') return { name: '최현웅', color: '#2980b9', subColor: '#5dade2' };
+                if (type === 'dongju') return { name: '곽동주', color: '#8e44ad', subColor: '#bb8fce' };
+                if (type === 'jaejun') return { name: '임재준', color: '#566573', subColor: '#85929e' };
+            };
+
+            const p1Info = getCharDetails(selectedP1Type);
+            const p2Info = getCharDetails(selectedP2Type);
+
+            p1 = new Character(180, 260, selectedP1Type, p1Info.name, p1Info.color, p1Info.subColor);
+            p2 = new Character(420, 260, selectedP2Type, p2Info.name, p2Info.color, p2Info.subColor);
+
+            p1NameLabel.innerText = p1.name;
+            p2NameLabel.innerText = p2.name;
+
+            glasses = [];
+            betaItems = [];
+            gloves = [];
+            trashPiles = [];
+            floatingTexts = [];
+            glassSpawnTimer = 0;
+            globalFreezeTimer = 0;
+            baesungEffect = null;
+            honeySide = null;
+            honeyAccumulatedDamage = 0;
+            honeyRespawnTimer = 0;
+            waterZone = null;
+            isRunning = true;
+            isPaused = false;
+            pauseBtn.innerText = "일시정지";
+
+            lastTime = performance.now();
+            requestAnimationFrame(gameLoop);
+        }
+
+        function togglePause() {
+            if (!isRunning) return;
+            isPaused = !isPaused;
+            if (isPaused) {
+                pauseBtn.innerText = "재개하기";
+            } else {
+                pauseBtn.innerText = "일시정지";
+                lastTime = performance.now();
+                requestAnimationFrame(gameLoop);
+            }
+        }
+
+        function resetGameConfig() {
+            isRunning = false;
+            isPaused = false;
+            pauseBtn.innerText = "일시정지";
+            startScreen.classList.remove('hidden');
+            gameoverScreen.classList.add('hidden');
+            startBtn.disabled = true;
+            startBtn.innerText = "매칭을 완료해주세요";
+            selectedP1Type = null;
+            selectedP2Type = null;
+            
+            document.querySelectorAll('.screen .player-selection-block button').forEach(b => {
+                b.style.outline = 'none';
+                b.style.opacity = '1';
+            });
+        }
+
+        function handleGlasses(dt) {
+            let hasHyunwoong = (p1.type === 'hyunwoong' || p2.type === 'hyunwoong');
+            if (!hasHyunwoong) return;
+
+            glassSpawnTimer += dt;
+            if (glassSpawnTimer >= 7) {
+                glassSpawnTimer = 0;
+                const rx = Math.random() * (canvas.width - 80) + 40;
+                const ry = Math.random() * (canvas.height - 75 - 80) + 40;
+                glasses.push({ x: rx, y: ry, radius: 34 });
+            }
+
+            for (let i = glasses.length - 1; i >= 0; i--) {
+                let g = glasses[i];
+                if (Math.hypot(p1.x - g.x, p1.y - g.y) < p1.radius + g.radius) {
+                    if (p1.type === 'hyunwoong') p1.heal(50); else p1.takeDamage(90);
+                    glasses.splice(i, 1); continue;
+                }
+                if (Math.hypot(p2.x - g.x, p2.y - g.y) < p2.radius + g.radius) {
+                    if (p2.type === 'hyunwoong') p2.heal(50); else p2.takeDamage(90);
+                    glasses.splice(i, 1);
+                }
+            }
+        }
+
+        function handleBetaItems() {
+            for (let i = betaItems.length - 1; i >= 0; i--) {
+                let b = betaItems[i];
+                if (p1.type === 'hyungjin' && !p1.isAlpha) {
+                    if (Math.hypot(p1.x - b.x, p1.y - b.y) < p1.radius + b.radius) {
+                        p1.betaCount++;
+                        betaItems.splice(i, 1);
+                        floatingTexts.push({ text: '+Aura', x: p1.x, y: p1.y - p1.radius - 25, color: '#00cec9', life: 1.0, vy: -0.8 * LEGACY_FPS });
+                        if (p1.betaCount >= 2) { p1.isAlpha = true; p1.maxHp = 250; p1.hp = 250; p1.alphaTimer = 30; }
+                        continue;
+                    }
+                    if (p2.type !== 'hyungjin' && Math.hypot(p2.x - b.x, p2.y - b.y) < b.radius + p2.radius) {
+                        p1.betaCount = Math.max(0, p1.betaCount - 1);
+                        betaItems.splice(i, 1);
+                        floatingTexts.push({ text: '-Aura', x: p2.x, y: p2.y - p2.radius - 25, color: '#ff4757', life: 1.0, vy: -0.8 * LEGACY_FPS });
+                        continue;
+                    }
+                }
+                if (p2.type === 'hyungjin' && !p2.isAlpha) {
+                    if (Math.hypot(p2.x - b.x, p2.y - b.y) < b.radius + b.radius) {
+                        p2.betaCount++;
+                        betaItems.splice(i, 1);
+                        floatingTexts.push({ text: '+Aura', x: p2.x, y: p2.y - p2.radius - 25, color: '#00cec9', life: 1.0, vy: -0.8 * LEGACY_FPS });
+                        if (p2.betaCount >= 2) { p2.isAlpha = true; p2.maxHp = 250; p2.hp = 250; p2.alphaTimer = 30; }
+                        continue;
+                    }
+                    if (p1.type !== 'hyungjin' && Math.hypot(p1.x - b.x, p1.y - b.y) < b.radius + p1.radius) {
+                        p2.betaCount = Math.max(0, p2.betaCount - 1);
+                        betaItems.splice(i, 1);
+                        floatingTexts.push({ text: '-Aura', x: p1.x, y: p1.y - p1.radius - 25, color: '#ff4757', life: 1.0, vy: -0.8 * LEGACY_FPS });
+                        continue;
+                    }
+                }
+            }
+        }
+
+        function handleGloves(dt) {
+            for (let i = gloves.length - 1; i >= 0; i--) {
+                let gl = gloves[i];
+                gl.x += gl.vx * dt; gl.y += gl.vy * dt;
+                if (gl.x < 0 || gl.x > canvas.width || gl.y < 0 || gl.y > canvas.height - 75) {
+                    gloves.splice(i, 1); continue;
+                }
+                let target = (gl.owner === p1) ? p2 : p1;
+                if (Math.hypot(target.x - gl.x, target.y - gl.y) < target.radius + gl.radius) {
+                    target.takeDamage(70); 
+                    gloves.splice(i, 1);
+                }
+            }
+        }
+
+        function handleTrashPiles(dt) {
+            let jaejunChar = (p1.type === 'jaejun') ? p1 : (p2.type === 'jaejun' ? p2 : null);
+            if (trashPiles.length > 0) {
+                let opponent = (jaejunChar === p1) ? p2 : (jaejunChar === p2 ? p1 : p2);
+                opponent.takeDotDamage(15 * dt, dt);
+            }
+            for (let i = trashPiles.length - 1; i >= 0; i--) {
+                let t = trashPiles[i];
+                if (Math.hypot(p1.x - t.x, p1.y - t.y) < p1.radius + t.radius) {
+                    if (!jaejunChar || p1 === jaejunChar) {
+                        p1.heal(50);
+                        floatingTexts.push({ text: '봉사상 수상 (+50)', x: p1.x, y: p1.y - p1.radius - 25, color: '#2ecc71', life: 1.0, vy: -0.8 * LEGACY_FPS });
+                        trashPiles.splice(i, 1); continue;
+                    }
+                }
+                if (Math.hypot(p2.x - t.x, p2.y - t.y) < p2.radius + t.radius) {
+                    if (!jaejunChar || p2 === jaejunChar) {
+                        p2.heal(50);
+                        floatingTexts.push({ text: '봉사상 수상 (+50)', x: p2.x, y: p2.y - p2.radius - 25, color: '#2ecc71', life: 1.0, vy: -0.8 * LEGACY_FPS });
+                        trashPiles.splice(i, 1);
+                    }
+                }
+            }
+        }
+
+        function handleCharacterCollision() {
+            if (p1.isSwallowed || p2.isSwallowed) return;
+            let dx = p2.x - p1.x;
+            let dy = p2.y - p1.y;
+            let dist = Math.hypot(dx, dy);
+            let minDist = p1.radius + p2.radius;
+
+            if (dist < minDist && dist > 0) {
+                if (p1.type === 'sewoon' || p1.type === 'pooh') {
+                    if (!p1.lastHitTime || performance.now() - p1.lastHitTime > 500) {
+                        p2.takeDamage(20);
+                        p1.lastHitTime = performance.now();
+                    }
+                }
+                if (p2.type === 'sewoon' || p2.type === 'pooh') {
+                    if (!p2.lastHitTime || performance.now() - p2.lastHitTime > 500) {
+                        p1.takeDamage(20);
+                        p2.lastHitTime = performance.now();
+                    }
+                }
+
+                let overlap = minDist - dist;
+                let nx = dx / dist; let ny = dy / dist;
+                p1.x -= nx * overlap * 0.5; p1.y -= ny * overlap * 0.5;
+                p2.x += nx * overlap * 0.5; p2.y += ny * overlap * 0.5;
+
+                let kx = p1.vx - p2.vx; let ky = p1.vy - p2.vy;
+                let p = 2 * (nx * kx + ny * ky) / 2;
+                p1.vx -= p * nx; p1.vy -= p * ny;
+                p2.vx += p * nx; p2.vy += p * ny;
+
+                let speed1 = Math.hypot(p1.vx, p1.vy);
+                let targetSpeed1 = p1.isFast ? p1.speed : p1.normalSpeed;
+                if (speed1 > 0) { p1.vx = (p1.vx / speed1) * targetSpeed1; p1.vy = (p1.vy / speed1) * targetSpeed1; }
+
+                let speed2 = Math.hypot(p2.vx, p2.vy);
+                let targetSpeed2 = p2.isFast ? p2.speed : p2.normalSpeed;
+                if (speed2 > 0) { p2.vx = (p2.vx / speed2) * targetSpeed2; p2.vy = (p2.vy / speed2) * targetSpeed2; }
+            }
+        }
+
+        let lastTime = performance.now();
+
+        function updateSkillBar(char, barEl, textEl) {
+            if (char.type === 'hyunwoong') {
+                let pct = (glassSpawnTimer / 7) * 100;
+                barEl.style.width = pct + '%'; 
+                textEl.innerText = `안경 스폰 (${(7 - glassSpawnTimer).toFixed(1)}s)`;
+            } else if (char.type === 'gangsun') {
+                let rem = Math.max(0, 15 - char.skillProgress);
+                let pct = (char.skillProgress / 15) * 100;
+                barEl.style.width = pct + '%'; 
+                textEl.innerText = rem > 0 ? `쿨타임 (${rem.toFixed(1)}s)` : '스킬 준비';
+            } else if (char.type === 'dongju') {
+                if (char.isCharging) {
+                    barEl.style.width = '100%'; 
+                    textEl.innerText = `장전 중.. (${char.chargeTimer.toFixed(1)}s)`;
+                } else {
+                    let rem = Math.max(0, 5 - char.skillProgress);
+                    let pct = (char.skillProgress / 5) * 100;
+                    barEl.style.width = pct + '%'; 
+                    textEl.innerText = rem > 0 ? `게이지 (${rem.toFixed(1)}s)` : '발사 준비';
+                }
+            } else if (char.type === 'hyungjin') {
+                if (char.isAlpha) {
+                    let pct = (char.alphaTimer / 30) * 100;
+                    barEl.style.width = pct + '%'; 
+                    textEl.innerText = `알파 각성 (${Math.ceil(char.alphaTimer)}s)`;
+                } else {
+                    let pct = (char.betaCount / 2) * 100;
+                    barEl.style.width = pct + '%'; 
+                    textEl.innerText = `베타 수집: ${char.betaCount}/2`;
+                }
+            } else if (char.type === 'jibao') {
+                if (char.isMeditating) {
+                    let pct = (char.meditateTimer / 3) * 100;
+                    barEl.style.width = pct + '%'; 
+                    textEl.innerText = `명상 중 (${char.meditateTimer.toFixed(1)}s)`;
+                } else {
+                    let rem = Math.max(0, 7 - char.skillProgress);
+                    let pct = (char.skillProgress / 7) * 100;
+                    barEl.style.width = pct + '%'; 
+                    let modeText = char.hp > 100 ? '뒤후려차기' : '명상';
+                    textEl.innerText = `${modeText} (${rem.toFixed(1)}s)`;
+                }
+            } else if (char.type === 'jaejun') {
+                let rem = Math.max(0, 12 - char.jaejunTimer);
+                let pct = (char.jaejunTimer / 12) * 100;
+                barEl.style.width = pct + '%'; 
+                textEl.innerText = `쓰레기 소환 (${rem.toFixed(1)}s)`;
+            } else if (char.type === 'baesung') {
+                let rem = Math.max(0, 10 - char.baesungTimer);
+                let pct = (char.baesungTimer / 10) * 100;
+                barEl.style.width = pct + '%'; 
+                textEl.innerText = `폭격 쿨타임 (${rem.toFixed(1)}s)`;
+            } else if (char.type === 'sewoon') {
+                barEl.style.width = '100%'; 
+                textEl.innerText = char.hasRevivedAsPooh ? '곰돌이 푸 전투 중' : '충돌 시 데미지';
+            } else if (char.type === 'youngryul') {
+                if (waterZone && waterZone.active && waterZone.owner === char) {
+                    let pct = (waterZone.timer / 5) * 100;
+                    barEl.style.width = pct + '%'; 
+                    textEl.innerText = `파도풀 (${waterZone.timer.toFixed(1)}s)`;
+                } else {
+                    let rem = Math.max(0, 10 - char.youngryulTimer);
+                    let pct = (char.youngryulTimer / 10) * 100;
+                    barEl.style.width = pct + '%'; 
+                    textEl.innerText = `파도풀 쿨타임 (${rem.toFixed(1)}s)`;
+                }
+            } else if (char.type === 'pooh') {
+                if (honeySide) {
+                    let pct = Math.max(0, 100 - (honeyAccumulatedDamage / 50) * 100);
+                    barEl.style.width = pct + '%';
+                    textEl.innerText = `꿀 내구도 (${Math.ceil(50 - honeyAccumulatedDamage)})`;
+                } else {
+                    let rem = Math.max(0, 10 - honeyRespawnTimer);
+                    let pct = (honeyRespawnTimer / 10) * 100;
+                    barEl.style.width = pct + '%'; 
+                    textEl.innerText = `꿀 재생성 (${honeyRespawnTimer.toFixed(1)}s)`;
+                }
+            }
+        }
+
+        function checkRevive(char) {
+            if (char.type === 'sewoon' && char.hp <= 0 && !char.hasRevivedAsPooh) {
+                char.hasRevivedAsPooh = true;
+                char.type = 'pooh';
+                char.name = '곰돌이 푸';
+                char.color = '#e67e22';
+                char.subColor = '#f39c12';
+                char.maxHp = 250;
+                char.hp = 250;
+                char.radius = 35;
+                
+                const sides = ['top', 'bottom', 'left', 'right'];
+                honeySide = sides[Math.floor(Math.random() * sides.length)];
+                honeyAccumulatedDamage = 0;
+                honeyRespawnTimer = 0;
+                
+                if (char === p1) p1NameLabel.innerText = '곰돌이 푸';
+                else p2NameLabel.innerText = '곰돌이 푸';
+
+                floatingTexts.push({ text: '부활', x: char.x, y: char.y - 45, color: '#f1c40f', life: 2.0, vy: -0.8 });
+                return true;
+            }
+            return false;
+        }
+
+        function gameLoop(currentTime) {
+            if (!isRunning) return;
+            if (isPaused) return;
+
+            let dt = (currentTime - lastTime) / 1000;
+            if (dt > 0.1) dt = 0.1;
+            lastTime = currentTime;
+
+            if (waterZone && waterZone.active) {
+                waterZone.timer -= dt;
+                if (waterZone.timer <= 0) {
+                    waterZone = null;
+                }
+            }
+
+            if (!honeySide) {
+                if (honeyRespawnTimer > 0) {
+                    honeyRespawnTimer -= dt;
+                    if (honeyRespawnTimer <= 0) {
+                        const sides = ['top', 'bottom', 'left', 'right'];
+                        honeySide = sides[Math.floor(Math.random() * sides.length)];
+                        honeyAccumulatedDamage = 0;
+                        floatingTexts.push({ text: '꿀 생성됨', x: canvas.width / 2, y: (canvas.height - 75) / 2, color: '#f1c40f', life: 1.5, vy: -0.5 });
+                    }
+                }
+            }
+
+            if (globalFreezeTimer > 0) {
+                globalFreezeTimer -= dt;
+                if (baesungEffect) {
+                    baesungEffect.timer -= dt;
+                    if (globalFreezeTimer <= 0) {
+                        let midY = (canvas.height - 75) / 2;
+                        let opponent = (baesungEffect.caster === p1) ? p2 : p1;
+                        let oppInTargetSide = (baesungEffect.targetSide === 'top') ? (opponent.y < midY) : (opponent.y >= midY);
+                        if (oppInTargetSide) opponent.takeDamage(150); 
+                        baesungEffect = null;
+                    }
+                }
+            }
+
+            p1.update(p2, dt);
+            p2.update(p1, dt);
+
+            if (p1.hp <= 0) checkRevive(p1);
+            if (p2.hp <= 0) checkRevive(p2);
+
+            handleCharacterCollision();
+            handleGlasses(dt);
+            handleBetaItems();
+            handleGloves(dt);
+            handleTrashPiles(dt);
+
+            for (let i = floatingTexts.length - 1; i >= 0; i--) {
+                let ft = floatingTexts[i];
+                ft.y += (ft.vy || 0) * dt; ft.life -= dt;
+                if (ft.life <= 0) floatingTexts.splice(i, 1);
+            }
+
+            p1HpBar.style.width = (p1.hp / p1.maxHp * 100) + '%';
+            p1HpText.innerText = `${Math.ceil(p1.hp)} / ${p1.maxHp}`;
+            p2HpBar.style.width = (p2.hp / p2.maxHp * 100) + '%';
+            p2HpText.innerText = `${Math.ceil(p2.hp)} / ${p2.maxHp}`;
+
+            updateSkillBar(p1, p1CdBar, p1CdText);
+            updateSkillBar(p2, p2CdBar, p2CdText);
+
+            if ((p1.hp <= 0 && p1.hasRevivedAsPooh) || (p2.hp <= 0 && p2.hasRevivedAsPooh) || (p1.hp <= 0 && p1.type !== 'sewoon') || (p2.hp <= 0 && p2.type !== 'sewoon')) {
+                if ((p1.hp <= 0 && (p1.type !== 'sewoon' || p1.hasRevivedAsPooh)) || (p2.hp <= 0 && (p2.type !== 'sewoon' || p2.hasRevivedAsPooh))) {
+                    endGame();
+                    return;
+                }
+            }
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            let bgGradient = ctx.createRadialGradient(
+                canvas.width / 2, (canvas.height - 75) / 2, 50,
+                canvas.width / 2, (canvas.height - 75) / 2, 350
+            );
+            bgGradient.addColorStop(0, '#2d3748');
+            bgGradient.addColorStop(1, '#151b22');
+            ctx.fillStyle = bgGradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height - 75);
+
+            ctx.save();
+            ctx.lineWidth = 4;
+            ctx.strokeStyle = '#00cec9';
+            ctx.shadowColor = '#00cec9';
+            ctx.shadowBlur = 12;
+            ctx.strokeRect(2, 2, canvas.width - 4, canvas.height - 77);
+            ctx.restore();
+
+            if (waterZone && waterZone.active) {
+                ctx.save();
+                ctx.beginPath();
+                ctx.arc(waterZone.cx, waterZone.cy, waterZone.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(0, 206, 205, 0.25)';
+                ctx.fill();
+                ctx.lineWidth = 5;
+                ctx.strokeStyle = '#00cec9';
+                ctx.shadowColor = '#00cec9';
+                ctx.shadowBlur = 15;
+                ctx.stroke();
+
+                ctx.beginPath();
+                ctx.arc(waterZone.cx, waterZone.cy, waterZone.radius * 0.7, 0, Math.PI * 2);
+                ctx.lineWidth = 2;
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.4)';
+                ctx.stroke();
+
+                ctx.fillStyle = '#ffffff';
+                ctx.font = 'bold 16px Malgun Gothic';
+                ctx.textAlign = 'center';
+                ctx.fillText('파도풀', waterZone.cx, waterZone.cy - waterZone.radius - 10);
+                ctx.restore();
+            }
+
+            if (honeySide) {
+                ctx.save();
+                ctx.lineWidth = 14;
+                ctx.strokeStyle = '#f39c12';
+                ctx.shadowColor = '#f39c12';
+                ctx.shadowBlur = 15;
+                ctx.beginPath();
+                if (honeySide === 'top') { 
+                    ctx.moveTo(0, 7); 
+                    ctx.lineTo(canvas.width, 7); 
+                }
+                else if (honeySide === 'bottom') { 
+                    ctx.moveTo(0, canvas.height - 75 - 7); 
+                    ctx.lineTo(canvas.width, canvas.height - 75 - 7); 
+                }
+                else if (honeySide === 'left') { 
+                    ctx.moveTo(7, 0); 
+                    ctx.lineTo(7, canvas.height - 75); 
+                }
+                else if (honeySide === 'right') { 
+                    ctx.moveTo(canvas.width - 7, 0); 
+                    ctx.lineTo(canvas.width - 7, canvas.height - 75); 
+                }
+                ctx.stroke();
+                ctx.restore();
+            }
+
+            if (baesungEffect && baesungEffect.phase === 'warning') {
+                let midY = (canvas.height - 75) / 2;
+                ctx.save();
+                ctx.fillStyle = 'rgba(255, 71, 87, 0.35)';
+                if (baesungEffect.targetSide === 'top') ctx.fillRect(0, 0, canvas.width, midY);
+                else ctx.fillRect(0, midY, canvas.width, (canvas.height - 75) - midY);
+                ctx.fillStyle = '#fff';
+                ctx.font = 'bold 20px Malgun Gothic';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.shadowColor = '#ff4757';
+                ctx.shadowBlur = 10;
+                ctx.fillText('폭격 경고 (150 데미지)', canvas.width / 2, (canvas.height - 75) / 2);
+                ctx.restore();
+            }
+
+            for (let g of glasses) {
+                ctx.save();
+                ctx.beginPath(); ctx.arc(g.x, g.y, g.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#2c3e50'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#f1c40f'; ctx.stroke();
+                ctx.fillStyle = '#f1c40f'; ctx.font = '24px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('🕶️', g.x, g.y);
+                ctx.restore();
+            }
+
+            for (let b of betaItems) {
+                ctx.save();
+                ctx.beginPath(); ctx.arc(b.x, b.y, b.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#1abc9c'; ctx.fill(); ctx.lineWidth = 2; ctx.strokeStyle = '#16a085'; ctx.stroke();
+                ctx.fillStyle = '#fff'; ctx.font = 'bold 15px Malgun Gothic'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('B', b.x, b.y);
+                ctx.restore();
+            }
+
+            for (let gl of gloves) {
+                ctx.save();
+                ctx.beginPath(); ctx.arc(gl.x, gl.y, gl.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#ff4757'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#ff6b81'; ctx.stroke();
+                ctx.fillStyle = '#fff'; ctx.font = '22px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('🥊', gl.x, gl.y);
+                ctx.restore();
+            }
+
+            for (let t of trashPiles) {
+                ctx.save();
+                ctx.beginPath(); ctx.arc(t.x, t.y, t.radius, 0, Math.PI * 2);
+                ctx.fillStyle = '#34495e'; ctx.fill(); ctx.lineWidth = 3; ctx.strokeStyle = '#7f8c8d'; ctx.stroke();
+                ctx.fillStyle = '#fff'; ctx.font = '22px sans-serif'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+                ctx.fillText('🗑️', t.x, t.y);
+                ctx.restore();
+            }
+
+            p1.draw();
+            p2.draw();
+
+            for (let ft of floatingTexts) {
+                ctx.save();
+                ctx.font = 'bold 15px Malgun Gothic'; ctx.fillStyle = ft.color; ctx.textAlign = 'center';
+                ctx.shadowColor = 'rgba(0,0,0,0.8)'; ctx.shadowBlur = 4;
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.restore();
+            }
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function endGame() {
+            isRunning = false;
+            gameoverScreen.classList.remove('hidden');
+
+            if (p1.hp <= 0 && p2.hp <= 0) {
+                winnerText.innerText = "무승부"; winnerText.style.color = '#bdc3c7';
+            } else if (p1.hp <= 0) {
+                winnerText.innerText = `${p2.name} 승리`; winnerText.style.color = '#ff4757';
+            } else {
+                winnerText.innerText = `${p1.name} 승리`; winnerText.style.color = '#00cec9';
+            }
+        }
+
+        function resetToMenu() {
+            gameoverScreen.classList.add('hidden');
+            startScreen.classList.remove('hidden');
+            startBtn.disabled = true;
+            startBtn.innerText = "매칭을 완료해주세요";
+            selectedP1Type = null;
+            selectedP2Type = null;
+            
+            document.querySelectorAll('.screen .player-selection-block button').forEach(b => {
+                b.style.outline = 'none';
+                b.style.opacity = '1';
+            });
+        }
+    </script>
+</body>
+</html>
